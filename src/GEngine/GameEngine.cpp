@@ -4,4 +4,25 @@
 
 #include "GEngine/GameEngine.h"
 
-std::unique_ptr<GEngine::GameWorld> GEngine::GameEngine::_world = std::make_unique<GEngine::GameWorld>(); // NOLINT(cert-err58-cpp)
+GEngine::GameWorld *GEngine::GameEngine::GetGameWorld()
+{
+	return _world.get();
+}
+
+void GEngine::GameEngine::Init()
+{
+	std::cout << "Initializing Game Engine...\n";
+	_world = std::make_unique<GameWorld>();
+}
+
+GEngine::GameEngine::GameEngine()
+{
+	// std::cout << "GameEngine Constructor...\n";
+	Init();
+}
+
+GEngine::GameEngine::~GameEngine()
+{
+	// std::cout << "GameEngine Destructor...\n";
+	_world.reset();
+}

@@ -10,7 +10,7 @@ int GEngine::GameObject::_gameObjectId = 1;
 GEngine::GameObject::GameObject()
 {
 	std::cout << "Creating GameObject and adding it to GameWorld...\n";
-	GameEngine::GetGameWorld()->AddToGameWorld(this);
+	// GameEngine::GetGameWorld()->AddToGameWorld(this);
 	std::cout << "GameObject adding to GameWorld successfully!\n";
 
 	_gameObjectId++;

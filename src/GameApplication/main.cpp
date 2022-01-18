@@ -1,9 +1,6 @@
 #include <iostream>
 
 #include "graphics.h"
-#include "GGraphics/GWindow/Window.h"
-#include "GGraphics/Draw.h"
-#include "GMath/MVector.h"
 #include "GEngine/GameEngine.h"
 
 enum class ShapeType
@@ -21,33 +18,53 @@ void SwapBuffers();
 
 void CheckMouse();
 
+struct Transform
+{
+   float position{};
+};
+
+struct Renderer
+{
+
+};
+
+struct Random0Comp
+{
+	float i{};
+	int x{};
+	Transform tr;
+};
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
 int main()
 {
-	std::cout << "Press 'Q' or 'ESC' to quit\n";
+	GEngine::GameEngine engine;
 
-	GGraphics::Window gameWindow(800, 600, (char *)"Game Window");
+	auto world = engine.GetGameWorld();
+	auto em = world->GetEntityManager();
 
-	auto world = GEngine::GameEngine::GetGameWorld();
+	auto player = em->CreateEntity();
+	em->SetEntityName(player, "Player");
+	std::cout << "Total Entities : " << em->AliveEntityCount << "\n";
 
-	// Infinite loop to keep progqram running... only quits when user
-	// presses the q key to exit.
-	while(true)
-	{
-		CheckKeys(); // Check for user Input
-		CheckMouse();
+	auto enemy = em->CreateEntity();
+	em->SetEntityName(enemy, "Enemy");
+	std::cout << "Total Entities : " << em->AliveEntityCount << "\n";
 
-		auto circleGo = GGraphics::Draw::Circle(GMath::MVector<int>(400, 300, 0), 100, RED);
+	auto aiagent = em->CreateEntity();
+	std::cout << "Total Entities : " << em->AliveEntityCount << "\n";
 
-		std::cout << world->GetAllGameWorldObjects().size() << "\n";
+	em->ECS::EntityManager::AssignComponent<Transform>(player);
+	em->ECS::EntityManager::AssignComponent<Renderer>(player);
+	em->ECS::EntityManager::AssignComponent<Random0Comp>(player);
 
-		auto aabb = circleGo->GetAABB();
+	em->ECS::EntityManager::AssignComponent<Transform>(enemy);
+	em->ECS::EntityManager::AssignComponent<Random0Comp>(enemy);
 
-		GGraphics::Draw::Box(std::get<0>(aabb), std::get<1>(aabb), std::get<2>(aabb), std::get<3>(aabb));
-
-		SwapBuffers();
-	}
+	em->ECS::EntityManager::AssignComponent<Transform>(aiagent);
+	em->ECS::EntityManager::AssignComponent<Renderer>(aiagent);
+	
 }
 #pragma clang diagnostic pop
 

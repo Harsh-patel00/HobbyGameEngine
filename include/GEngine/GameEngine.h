@@ -2,9 +2,10 @@
 // Created by Harsh on 10-01-2022.
 //
 
-#include "GameWorld.h"
-#include "GEngine/ECS/Coordinator.hpp"
+#include <iostream>
 #include <memory>
+
+#include "GameWorld.h"
 
 namespace GEngine
 {
@@ -19,25 +20,19 @@ namespace GEngine
 		 * 2. Reference to Coordinator (ECS)
 		 */
 
-	private:
-		static std::unique_ptr<GameWorld> _world;
+		private:
+			std::unique_ptr<GameWorld> _world;
 
-	public:
-		GameEngine()
-		{
-			std::cout << "Initializing GameEngine...\n";
-		}
+		public:
+			GameEngine();
+			~GameEngine();
 
-		~GameEngine()
-		{
-			auto deleter = _world.release();
-		}
+		public:
+			GameWorld* GetGameWorld();
 
-	public:
-		static GameWorld *GetGameWorld()
-		{
-			return _world.get();
-		}
+		private:
+			void Init();
+
 	};
 #endif //GAMEENGINE_GAMEENGINE_H
 }

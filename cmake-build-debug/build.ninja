@@ -91,6 +91,20 @@ build CMakeFiles/GameEngine.dir/src/GEngine/GameEngine.cpp.obj: CXX_COMPILER__Ga
   OBJECT_DIR = CMakeFiles\GameEngine.dir
   OBJECT_FILE_DIR = CMakeFiles\GameEngine.dir\src\GEngine
 
+build CMakeFiles/GameEngine.dir/src/GEngine/ECS/EntityManager.cpp.obj: CXX_COMPILER__GameEngine_Debug C$:/Harsh/Projects/GameEngine/src/GEngine/ECS/EntityManager.cpp || cmake_object_order_depends_target_GameEngine
+  DEP_FILE = CMakeFiles\GameEngine.dir\src\GEngine\ECS\EntityManager.cpp.obj.d
+  FLAGS = -g -std=gnu++1z
+  INCLUDES = -IC:/Harsh/Projects/GameEngine/GameEngine -IC:/Harsh/Projects/GameEngine/ExternalDependencies/include -IC:/Harsh/Projects/GameEngine/include
+  OBJECT_DIR = CMakeFiles\GameEngine.dir
+  OBJECT_FILE_DIR = CMakeFiles\GameEngine.dir\src\GEngine\ECS
+
+build CMakeFiles/GameEngine.dir/src/GEngine/ECS/ComponentManager.cpp.obj: CXX_COMPILER__GameEngine_Debug C$:/Harsh/Projects/GameEngine/src/GEngine/ECS/ComponentManager.cpp || cmake_object_order_depends_target_GameEngine
+  DEP_FILE = CMakeFiles\GameEngine.dir\src\GEngine\ECS\ComponentManager.cpp.obj.d
+  FLAGS = -g -std=gnu++1z
+  INCLUDES = -IC:/Harsh/Projects/GameEngine/GameEngine -IC:/Harsh/Projects/GameEngine/ExternalDependencies/include -IC:/Harsh/Projects/GameEngine/include
+  OBJECT_DIR = CMakeFiles\GameEngine.dir
+  OBJECT_FILE_DIR = CMakeFiles\GameEngine.dir\src\GEngine\ECS
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target GameEngine
@@ -99,7 +113,7 @@ build CMakeFiles/GameEngine.dir/src/GEngine/GameEngine.cpp.obj: CXX_COMPILER__Ga
 #############################################
 # Link the executable GameEngine.exe
 
-build GameEngine.exe: CXX_EXECUTABLE_LINKER__GameEngine_Debug CMakeFiles/GameEngine.dir/src/GameApplication/main.cpp.obj CMakeFiles/GameEngine.dir/src/GGraphics/GWindow/Window.cpp.obj CMakeFiles/GameEngine.dir/src/GGraphics/Draw.cpp.obj CMakeFiles/GameEngine.dir/src/GEngine/GameObject.cpp.obj CMakeFiles/GameEngine.dir/src/GEngine/GameWorld.cpp.obj CMakeFiles/GameEngine.dir/src/GEngine/GameEngine.cpp.obj
+build GameEngine.exe: CXX_EXECUTABLE_LINKER__GameEngine_Debug CMakeFiles/GameEngine.dir/src/GameApplication/main.cpp.obj CMakeFiles/GameEngine.dir/src/GGraphics/GWindow/Window.cpp.obj CMakeFiles/GameEngine.dir/src/GGraphics/Draw.cpp.obj CMakeFiles/GameEngine.dir/src/GEngine/GameObject.cpp.obj CMakeFiles/GameEngine.dir/src/GEngine/GameWorld.cpp.obj CMakeFiles/GameEngine.dir/src/GEngine/GameEngine.cpp.obj CMakeFiles/GameEngine.dir/src/GEngine/ECS/EntityManager.cpp.obj CMakeFiles/GameEngine.dir/src/GEngine/ECS/ComponentManager.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -Wl,-Bstatic  -lbgi  -Wl,-Bdynamic  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   LINK_PATH = -LC:/Harsh/Projects/GameEngine/GameEngine   -LC:/Harsh/Projects/GameEngine/ExternalDependencies/lib
