@@ -3,12 +3,12 @@
 //
 
 #include <iostream>
+#include <memory>
 #include "GEngine/ECS/EntityManager.h"
 
 void ECS::EntityManager::Init()
 {
    std::cout << "Initializing EntityManager...\n";
-   componentManager = std::make_unique<ComponentManager>();
 }
 
 ECS::EntityID ECS::EntityManager::CreateEntity()

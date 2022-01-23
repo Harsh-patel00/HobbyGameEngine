@@ -10,14 +10,6 @@ namespace ECS
 #ifndef GAMEENGINE_COMPONENTMANAGER_H
 #define GAMEENGINE_COMPONENTMANAGER_H
 
-   extern int s_componentCounter;
-   template <class T>
-   int GetComponentId()
-   {
-	   static int s_componentId = s_componentCounter++;
-	   return s_componentId;
-   }
-
    struct ComponentPool
    {
 	   char *ComponentData{nullptr};
@@ -51,6 +43,9 @@ namespace ECS
 		   ComponentManager();
 		   ~ComponentManager();
 
+	   private:
+		   void Init();
+
 	   public:
 		   template<typename T>
 		   T* GetComponentFromList(EntityIndex entityIndex)
@@ -75,9 +70,6 @@ namespace ECS
 				   ent.mask.set(GetComponentId<T>());
 			   }
 		   }
-
-	   private:
-		   void Init();
    };
 
 #endif //GAMEENGINE_COMPONENTMANAGER_H

@@ -2,12 +2,21 @@
 // Created by Harsh on 15-01-2022.
 //
 
+#include <iostream>
 #include <bitset>
 
 namespace ECS
 {
 #ifndef GAMEENGINE_PREREQUISITE_H
 #define GAMEENGINE_PREREQUISITE_H
+
+   extern int s_componentCounter;
+   template <class T>
+   int GetComponentId()
+   {
+	   static int s_componentId = s_componentCounter++;
+	   return s_componentId;
+   }
 
 	using ull = unsigned long long;
 	using uint = unsigned int;

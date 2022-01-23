@@ -2,9 +2,7 @@
 // Created by Harsh on 10-01-2022.
 //
 
-#include <vector>
-#include <memory>
-#include "ECS/EntityManager.h"
+#include "ECS/EcsManager.h"
 
 namespace GEngine
 {
@@ -13,14 +11,14 @@ namespace GEngine
 	class GameWorld
 	{
 		private:
-			std::unique_ptr<ECS::EntityManager> entityManager;
+			std::unique_ptr<ECS::EcsManager> ecsManager{nullptr};
 
 		public:
 			GameWorld();
 			~GameWorld();
 
 		public:
-			ECS::EntityManager* GetEntityManager();
+			ECS::EcsManager* GetEcsManager();
 
 		private:
 			void Init();

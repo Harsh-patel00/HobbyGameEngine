@@ -35,6 +35,7 @@ struct Random0Comp
 	Transform tr;
 };
 
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
 int main()
@@ -42,29 +43,43 @@ int main()
 	GEngine::GameEngine engine;
 
 	auto world = engine.GetGameWorld();
-	auto em = world->GetEntityManager();
+	auto em = world->GetEcsManager();
 
 	auto player = em->CreateEntity();
 	em->SetEntityName(player, "Player");
-	std::cout << "Total Entities : " << em->AliveEntityCount << "\n";
+	std::cout << "Total Entities : " << em->GetAliveEntityCount() << "\n";
 
 	auto enemy = em->CreateEntity();
 	em->SetEntityName(enemy, "Enemy");
-	std::cout << "Total Entities : " << em->AliveEntityCount << "\n";
+	std::cout << "Total Entities : " << em->GetAliveEntityCount() << "\n";
 
 	auto aiagent = em->CreateEntity();
-	std::cout << "Total Entities : " << em->AliveEntityCount << "\n";
+	em->SetEntityName(aiagent, "AI_Agent");
+	std::cout << "Total Entities : " << em->GetAliveEntityCount() << "\n";
 
-	em->ECS::EntityManager::AssignComponent<Transform>(player);
-	em->ECS::EntityManager::AssignComponent<Renderer>(player);
-	em->ECS::EntityManager::AssignComponent<Random0Comp>(player);
+	em->AssignComponent<Transform>(player);
+	em->AssignComponent<Renderer>(player);
+	em->AssignComponent<Random0Comp>(player);
 
-	em->ECS::EntityManager::AssignComponent<Transform>(enemy);
-	em->ECS::EntityManager::AssignComponent<Random0Comp>(enemy);
+	em->AssignComponent<Transform>(enemy);
+	em->AssignComponent<Random0Comp>(enemy);
 
-	em->ECS::EntityManager::AssignComponent<Transform>(aiagent);
-	em->ECS::EntityManager::AssignComponent<Renderer>(aiagent);
-	
+	em->AssignComponent<Transform>(aiagent);
+	em->AssignComponent<Renderer>(aiagent);
+
+
+	for (auto entId : em->EntitiesWithComponents<Transform>())
+	{
+		em->RemoveComponent<Transform>(entId);
+		std::cout << em->GetEntityName(entId) << "\n";
+	}
+
+//	em->RunSystem<PhysicsSystem>();
+
+//	while (true)
+//	{
+
+//	}
 }
 #pragma clang diagnostic pop
 

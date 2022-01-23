@@ -2,10 +2,6 @@
 // Created by Harsh on 15-01-2022.
 //
 
-#include <vector>
-#include <memory>
-#include <typeinfo>
-#include "Prerequisite.h"
 #include "ComponentManager.h"
 
 namespace ECS
@@ -20,8 +16,7 @@ namespace ECS
 		   std::vector<EntityIndex> freeEntities;
 		   uint AliveEntityCount{};
 
-	   private:
-		   std::unique_ptr<ComponentManager> componentManager{};
+		   EntityIndex GetEntityIndex(EntityID);
 
 	   public:
 		   EntityManager();
@@ -29,16 +24,25 @@ namespace ECS
 
 	   private:
 		   void Init();
+		   EntityID CreatedEntityId(EntityIndex entityIndex, EntityVersion entityVersion);
+		   EntityVersion GetEntityVersion(EntityID);
+		   void UpdateAliveEntityCount();
+
+		   template<typename T>
+		   bool IsComponentPresent(EntityID entityId)
+		   {
+			   return entities[GetEntityIndex(entityId)].mask.test(GetComponentId<T>());
+		   }
 
 	   public:
-		   // Change return type to "EntityID" instead of "Entity*"
 		   EntityID CreateEntity();
 		   void DestroyEntity(EntityID &id);
 		   void SetEntityName(EntityID id, const std::string &name);
 		   std::string GetEntityName(EntityID id);
+		   bool IsEntityValid(EntityID entityId);
 
 		   template <typename T>
-		   void AssignComponent(EntityID id)
+		   void AssignComponent(EntityID id, ComponentManager &cm)
 		   {
 			   if(!IsEntityValid(id))
 			   {
@@ -52,7 +56,7 @@ namespace ECS
 				   return;
 			   }
 
-			   componentManager->AssignComponent<T>(entities[GetEntityIndex(id)]);
+			   cm.AssignComponent<T>(entities[GetEntityIndex(id)]);
 
 			   std::cout << "\nComponent assigned to : " << GetEntityName(id) <<
 			   "\nMask : " << entities[GetEntityIndex(id)].mask << "\n";
@@ -74,10 +78,11 @@ namespace ECS
 			   }
 
 			   entities[GetEntityIndex(id)].mask.reset(GetComponentId<T>());
+			   std::cout << typeid(T).name() << " Component removed successfully!\n";
 		   }
 
 		   template<typename T>
-		   bool TryGetComponent(EntityID id, T &val)
+		   bool TryGetComponent(EntityID id, T &val, ComponentManager &cm)
 		   {
 			   if(!IsEntityValid(id))
 			   {
@@ -91,12 +96,30 @@ namespace ECS
 				   return false;
 			   }
 
-			   val = *componentManager->GetComponentFromList<T>(GetEntityIndex(id));
+			   val = *(cm.GetComponentFromList<T>(GetEntityIndex(id)));
 			   return true;
 		   }
 
 		   template<typename T>
-		   void SetComponentValue(T value, EntityID id)
+		   T* GetComponent(EntityID id, ComponentManager &cm)
+		   {
+			   if(!IsEntityValid(id))
+			   {
+				   std::cout << "Can't get component : Entity deleted!\n";
+				   return nullptr;
+			   }
+
+			   if(!IsComponentPresent<T>(id))
+			   {
+				   std::cout << "Can't get component : Component is not attached to the entity!\n";
+				   return nullptr;
+			   }
+
+			   return cm.GetComponentFromList<T>(GetEntityIndex(id));
+		   }
+
+		   template<typename T>
+		   void SetComponentValue(T value, EntityID id, ComponentManager &cm)
 		   {
 			   if(!IsEntityValid(id))
 			   {
@@ -110,25 +133,11 @@ namespace ECS
 				   return;
 			   }
 
-			   auto comp = componentManager->GetComponentFromList<T>(GetEntityIndex(id));
+			   auto comp = cm.GetComponentFromList<T>(GetEntityIndex(id));
 
 			   *comp = value;
 		   }
-
-	   private:
-		   EntityID CreatedEntityId(EntityIndex entityIndex, EntityVersion entityVersion);
-		   EntityIndex GetEntityIndex(EntityID);
-		   EntityVersion GetEntityVersion(EntityID);
-		   bool IsEntityValid(EntityID entityId);
-		   void UpdateAliveEntityCount();
-
-		   template<typename T>
-		   bool IsComponentPresent(EntityID entityId)
-		   {
-			   return entities[GetEntityIndex(entityId)].mask.test(GetComponentId<T>());
-		   }
-
    };
 
-#endif //GAMEENGINE_ENTITYMANAGER_H
+#endif // GAMEENGINE_ENTITYMANAGER_H
 }

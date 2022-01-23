@@ -8,12 +8,12 @@
 void GEngine::GameWorld::Init()
 {
 	std::cout << "Initializing World...\n";
-	entityManager = std::make_unique<ECS::EntityManager>();
+	ecsManager = std::make_unique<ECS::EcsManager>();
 }
 
-ECS::EntityManager *GEngine::GameWorld::GetEntityManager()
+ECS::EcsManager *GEngine::GameWorld::GetEcsManager()
 {
-	return entityManager.get();
+	return ecsManager.get();
 }
 
 GEngine::GameWorld::GameWorld()
@@ -25,5 +25,6 @@ GEngine::GameWorld::GameWorld()
 GEngine::GameWorld::~GameWorld()
 {
 	// std::cout << "GameWorld Destructor\n";
-	entityManager.reset();
+	ecsManager.reset();
 }
+
