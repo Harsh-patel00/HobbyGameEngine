@@ -16,15 +16,19 @@ add_executable(GameEngine src/GameApplication/main.cpp
         src/GEngine/GameWorld.cpp
         include/GEngine/GameEngine.h
         src/GEngine/GameEngine.cpp
-        include/GEngine/ECS/Prerequisite.h
-        include/GEngine/ECS/EntityManager.h
-        src/GEngine/ECS/EntityManager.cpp
-        src/GEngine/ECS/ComponentManager.cpp
-        include/GEngine/ECS/ComponentManager.h
-        src/GEngine/ECS/SystemManager.cpp
-        include/GEngine/ECS/SystemManager.h
-        include/GEngine/ECS/System.h src/GEngine/ECS/System.cpp include/GEngine/ECS/EcsManager.cpp include/GEngine/ECS/EcsManager.h)
+        include/GEngine/EcsCore/Prerequisite.h
+        include/GEngine/EcsCore/EntityManager.h
+        src/GEngine/EcsCore/EntityManager.cpp
+        src/GEngine/EcsCore/ComponentManager.cpp
+        include/GEngine/EcsCore/ComponentManager.h
+        src/GEngine/EcsCore/SystemManager.cpp
+        include/GEngine/EcsCore/SystemManager.h
+        include/GEngine/EcsCore/System.h
+        src/GEngine/EcsCore/System.cpp
+        src/GEngine/EcsCore/EcsManager.cpp
+        include/GEngine/EcsCore/EcsManager.h
+        src/GameApplication/ECS/Components/Transform.h src/GameApplication/ECS/Components/Renderer.h src/GameApplication/ECS/Systems/RenderSystem.h)
 
-include_directories(GameEngine "ExternalDependencies\\include\\" "include\\" "src\\GameApplication")
+include_directories(GameEngine "ExternalDependencies\\include\\" "include\\" "src\\GameApplication\\")
 
 target_link_libraries(GameEngine libbgi.a)

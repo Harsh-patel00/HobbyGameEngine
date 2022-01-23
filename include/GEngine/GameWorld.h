@@ -2,7 +2,7 @@
 // Created by Harsh on 10-01-2022.
 //
 
-#include "ECS/EcsManager.h"
+#include "EcsCore/EcsManager.h"
 
 namespace GEngine
 {

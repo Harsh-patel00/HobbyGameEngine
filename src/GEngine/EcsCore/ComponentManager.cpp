@@ -3,7 +3,7 @@
 //
 
 #include <iostream>
-#include "GEngine/ECS/ComponentManager.h"
+#include "GEngine/EcsCore/ComponentManager.h"
 
 int ECS::s_componentCounter = 0;
 

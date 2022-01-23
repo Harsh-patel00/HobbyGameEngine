@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <memory>
-#include "GEngine/ECS/EntityManager.h"
+#include "GEngine/EcsCore/EntityManager.h"
 
 void ECS::EntityManager::Init()
 {

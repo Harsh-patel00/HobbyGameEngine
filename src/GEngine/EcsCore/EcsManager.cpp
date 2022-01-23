@@ -2,7 +2,7 @@
 // Created by Harsh on 22-01-2022.
 //
 
-#include "EcsManager.h"
+#include "GEngine/EcsCore/EcsManager.h"
 
 ECS::EcsManager::EcsManager()
 {
@@ -20,7 +20,6 @@ void ECS::EcsManager::Init()
 	std::cout << "Initializing EcsManager...\n";
 	entityManager = std::make_unique<ECS::EntityManager>();
 	componentManager = std::make_unique<ECS::ComponentManager>();
-	systemManager = std::make_unique<ECS::SystemManager>();
 }
 
 ECS::EntityID ECS::EcsManager::CreateEntity()

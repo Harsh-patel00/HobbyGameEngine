@@ -1,7 +1,13 @@
 #include <iostream>
 
+// User-defined header files
 #include "graphics.h"
 #include "GEngine/GameEngine.h"
+
+#include "ECS/Components/Transform.h"
+#include "ECS/Components/Renderer.h"
+
+#include "ECS/Systems/RenderSystem.h"
 
 enum class ShapeType
 {
@@ -17,24 +23,6 @@ void CheckKeys();
 void SwapBuffers();
 
 void CheckMouse();
-
-struct Transform
-{
-   float position{};
-};
-
-struct Renderer
-{
-
-};
-
-struct Random0Comp
-{
-	float i{};
-	int x{};
-	Transform tr;
-};
-
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
@@ -59,27 +47,20 @@ int main()
 
 	em->AssignComponent<Transform>(player);
 	em->AssignComponent<Renderer>(player);
-	em->AssignComponent<Random0Comp>(player);
 
 	em->AssignComponent<Transform>(enemy);
-	em->AssignComponent<Random0Comp>(enemy);
 
 	em->AssignComponent<Transform>(aiagent);
 	em->AssignComponent<Renderer>(aiagent);
 
+	auto rs = std::make_unique<RenderSystem>("Render");
 
-	for (auto entId : em->EntitiesWithComponents<Transform>())
+	while (true)
 	{
-		em->RemoveComponent<Transform>(entId);
-		std::cout << em->GetEntityName(entId) << "\n";
+		CheckKeys();
+
+		rs->OnUpdate(1/60.f, em);
 	}
-
-//	em->RunSystem<PhysicsSystem>();
-
-//	while (true)
-//	{
-
-//	}
 }
 #pragma clang diagnostic pop
 

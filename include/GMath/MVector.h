@@ -119,5 +119,9 @@ namespace GMath
 		}
 	};
 
+	using Vec3i = MVector<int>;
+	using Vec3f = MVector<float>;
+	using Vec3d = MVector<double>;
+
 #endif //PHYSICSENGINE_PVECTOR_H
 }

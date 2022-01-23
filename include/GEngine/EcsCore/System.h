@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include "EcsManager.h"
 
 namespace ECS
 {
@@ -11,22 +12,15 @@ namespace ECS
 
    class System
    {
-	   private:
-		   float _deltaTime{1/60.f};
 	   public:
-		   int systemId{};
-
-	   public:
-		   explicit System(int);
-		   System() = default;
+		   explicit System(const std::string &);
 		   ~System();
 
 	   private:
-		   void Init();
+		   void Init(const std::string &name);
 
 	   public:
-		   void Run();
-		   virtual void OnUpdate(float dt);
+		   virtual void OnUpdate(float dt, EcsManager *ecsManager) = 0;
    };
 
 #endif //GAMEENGINE_SYSTEM_H

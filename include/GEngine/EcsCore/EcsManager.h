@@ -4,7 +4,6 @@
 
 #include <memory>
 #include "EntityManager.h"
-#include "SystemManager.h"
 
 namespace ECS
 {
@@ -116,7 +115,6 @@ namespace ECS
 	   private:
 		   std::unique_ptr<ECS::EntityManager> entityManager{};
 		   std::unique_ptr<ECS::ComponentManager> componentManager{};
-		   std::unique_ptr<ECS::SystemManager> systemManager{};
 
 	   public:
 
