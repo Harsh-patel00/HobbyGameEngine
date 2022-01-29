@@ -20,6 +20,7 @@ namespace ECS
 		   void Init(const std::string &name);
 
 	   public:
+		   virtual void OnCreate(EcsManager *ecsManager);
 		   virtual void OnUpdate(float dt, EcsManager *ecsManager) = 0;
    };
 

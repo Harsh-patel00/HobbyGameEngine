@@ -27,7 +27,7 @@ add_executable(GameEngine src/GameApplication/main.cpp
         src/GEngine/EcsCore/System.cpp
         src/GEngine/EcsCore/EcsManager.cpp
         include/GEngine/EcsCore/EcsManager.h
-        src/GameApplication/ECS/Components/Transform.h src/GameApplication/ECS/Components/Renderer.h src/GameApplication/ECS/Systems/RenderSystem.h)
+        src/GameApplication/ECS/Components/Transform.h src/GameApplication/ECS/Components/Renderer.h src/GameApplication/ECS/Systems/RenderSystem.h src/GameApplication/ECS/Systems/MoveSystem.h)
 
 include_directories(GameEngine "ExternalDependencies\\include\\" "include\\" "src\\GameApplication\\")
 

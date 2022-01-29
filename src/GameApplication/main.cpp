@@ -1,28 +1,20 @@
 #include <iostream>
 
 // User-defined header files
-#include "graphics.h"
 #include "GEngine/GameEngine.h"
 
 #include "ECS/Components/Transform.h"
 #include "ECS/Components/Renderer.h"
 
 #include "ECS/Systems/RenderSystem.h"
-
-enum class ShapeType
-{
-	CIRCLE = 0,
-	LINE   = 1
-};
+#include "ECS/Systems/MoveSystem.h"
 
 // Function Prototypes
-void Draw(ShapeType);
-
 void CheckKeys();
 
-void SwapBuffers();
-
 void CheckMouse();
+
+void SwapBuffers();
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
@@ -33,33 +25,41 @@ int main()
 	auto world = engine.GetGameWorld();
 	auto em = world->GetEcsManager();
 
-	auto player = em->CreateEntity();
-	em->SetEntityName(player, "Player");
-	std::cout << "Total Entities : " << em->GetAliveEntityCount() << "\n";
+	auto circleEnt = em->CreateEntity();
+	em->SetEntityName(circleEnt, "Circle");
+	em->AssignComponent<Renderer>(circleEnt);
+	em->AssignComponent<Transform>(circleEnt);
 
-	auto enemy = em->CreateEntity();
-	em->SetEntityName(enemy, "Enemy");
-	std::cout << "Total Entities : " << em->GetAliveEntityCount() << "\n";
+	em->SetComponentValue<Transform>({{400, 300, 0}}, circleEnt);
+	em->SetComponentValue<Renderer>({Shape::Circle, 100},circleEnt);
 
-	auto aiagent = em->CreateEntity();
-	em->SetEntityName(aiagent, "AI_Agent");
-	std::cout << "Total Entities : " << em->GetAliveEntityCount() << "\n";
+	auto squareEnt = em->CreateEntity();
+	em->SetEntityName(squareEnt, "Square");
+	em->AssignComponent<Renderer>(squareEnt);
+	em->AssignComponent<Transform>(squareEnt);
 
-	em->AssignComponent<Transform>(player);
-	em->AssignComponent<Renderer>(player);
-
-	em->AssignComponent<Transform>(enemy);
-
-	em->AssignComponent<Transform>(aiagent);
-	em->AssignComponent<Renderer>(aiagent);
+	em->SetComponentValue<Transform>({{100, 200, 0}}, squareEnt);
+	em->SetComponentValue<Renderer>({Shape::Square, 0, {{150, 120, 0}}},squareEnt);
 
 	auto rs = std::make_unique<RenderSystem>("Render");
+	auto ms = std::make_unique<MoveSystem>("Move");
+	rs->OnCreate(em);
+	ms->OnCreate(em);
+
+	// Delta time (Locked at 60 fps)
+	// Fixed time step
+	float dt = 1/60.f;
 
 	while (true)
 	{
 		CheckKeys();
+		CheckMouse();
 
-		rs->OnUpdate(1/60.f, em);
+		ms->OnUpdate(dt, em);
+
+		// Always call at last before SwapBuffers
+		rs->OnUpdate(dt, em);
+		SwapBuffers();
 	}
 }
 #pragma clang diagnostic pop
@@ -141,19 +141,6 @@ void CheckMouse()
 	#pragma endregion
 }
 
-void Draw(ShapeType type)
-{
-	switch (type)
-	{
-		case ShapeType::CIRCLE:
-			circle(getmaxwidth()/2, getmaxheight()/2, 100);
-			break;
-		case ShapeType::LINE:
-			//line(x1y1.x, x1y1.y, x1y1.x + 100, x1y1.y);
-			break;
-	}
-}
-
 void CheckKeys()
 {
 	if (kbhit() == true)
@@ -167,14 +154,12 @@ void CheckKeys()
 
 		if (GetAsyncKeyState(VK_RIGHT))
 		{
-			// CirclePos.x += 5;
-			// x1y1.x += 5;
+
 		}
 
 		if (GetAsyncKeyState(VK_LEFT))
 		{
-			// CirclePos.x -= 5.f;
-			// x1y1.x -= 5;
+
 		}
 
 		if(char(toupper(getch())) == 'G')

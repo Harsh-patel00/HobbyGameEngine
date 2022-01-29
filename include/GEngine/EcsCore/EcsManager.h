@@ -10,14 +10,16 @@ namespace ECS
 #ifndef GAMEENGINE_ECSMANAGER_H
 #define GAMEENGINE_ECSMANAGER_H
 
+   // Helps to iterate over the entities with specified components
+   // If no components are specified, then it will iterate over all entities
    template <typename... ComponentTypes>
    struct EntitiesIterator
    {
-	   EntityManager *pScene{nullptr};
+	   EntityManager *pEntityManager{nullptr};
 	   bool testAllEntities{false};
 	   ComponentMask componentMask{};
 
-	   explicit EntitiesIterator(EntityManager &scene) : pScene(&scene)
+	   explicit EntitiesIterator(EntityManager &scene) : pEntityManager(&scene)
 	   {
 		   if (sizeof...(ComponentTypes) == 0)
 		   {
@@ -93,30 +95,30 @@ namespace ECS
 	   {
 		   // Iterator to beginning of this view
 		   EntityIndex firstIndex{0};
-		   while(firstIndex < pScene->entities.size() &&
-		         componentMask != (componentMask & pScene->entities[firstIndex].mask) ||
-		         !pScene->IsEntityValid(pScene->entities[firstIndex].id))
+		   while(firstIndex < pEntityManager->entities.size() &&
+		         componentMask != (componentMask & pEntityManager->entities[firstIndex].mask) ||
+		         !pEntityManager->IsEntityValid(pEntityManager->entities[firstIndex].id))
 		   {
 			   firstIndex++;
 		   }
 
-		   return Iterator(pScene, firstIndex, componentMask, testAllEntities);
+		   return Iterator(pEntityManager, firstIndex, componentMask, testAllEntities);
 	   }
 
 	   Iterator end() const
 	   {
 		   // Iterator to end of this view
-		   return Iterator(pScene, EntityIndex(pScene->entities.size()), componentMask, testAllEntities);
+		   return Iterator(pEntityManager, EntityIndex(pEntityManager->entities.size()), componentMask, testAllEntities);
 	   }
    };
 
    class EcsManager
    {
 	   private:
+		   // Unique entity manager
 		   std::unique_ptr<ECS::EntityManager> entityManager{};
+		   // Unique component manager
 		   std::unique_ptr<ECS::ComponentManager> componentManager{};
-
-	   public:
 
 	   public:
 		   EcsManager();
@@ -126,42 +128,54 @@ namespace ECS
 		   void Init();
 
 	   public:
+		   // Create and register entity
 		   EntityID CreateEntity();
+		   // Destroy entity
 		   void DestroyEntity(EntityID &id);
+		   // Set entity name
 		   void SetEntityName(EntityID id, const std::string &name);
+		   // Get entity name
 		   std::string GetEntityName(EntityID id);
+		   // Return entities count that are alive
 		   uint GetAliveEntityCount();
 
+		   // Assign component to entity
 		   template <typename T>
 		   void AssignComponent(EntityID id)
 		   {
-			   entityManager->AssignComponent<T>(id, *componentManager);
+			   entityManager->template AssignComponent<T>(id, *componentManager);
 		   }
 
+		   // Remove component from entity
 		   template<typename T>
 		   void RemoveComponent(EntityID id)
 		   {
-			   entityManager->RemoveComponent<T>(id);
+			   entityManager->template RemoveComponent<T>(id);
 		   }
 
+		   // Use this when you are not sure if the component assigned to an entity or not!
 		   template<typename T>
 		   bool TryGetComponent(EntityID id, T &val)
 		   {
-			   return entityManager->template TryGetComponent(id, val, *componentManager);
+			   return entityManager->template TryGetComponent<T>(id, val, *componentManager);
 		   }
 
+		   // Use this when you are sure that the entity contains specified component
+		   // Otherwise use 'TryGetComponent'.
 		   template<typename T>
 		   T* GetComponent(EntityID id)
 		   {
-			   return entityManager->GetComponent<T>(id, *componentManager);
+			   return entityManager->template GetComponent<T>(id, *componentManager);
 		   }
 
+		   // Set the component value, 1 at a time
 		   template<typename T>
 		   void SetComponentValue(T value, EntityID id)
 		   {
-			   entityManager->SetComponentValue<T>(value, id, *componentManager);
+			   entityManager->template SetComponentValue<T>(value, id, *componentManager);
 		   }
 
+		   // Iterator for all entities
 		   template<typename... Args>
 		   EntitiesIterator<Args...> EntitiesWithComponents()
 		   {
