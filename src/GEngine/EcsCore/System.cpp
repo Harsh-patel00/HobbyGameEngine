@@ -21,5 +21,5 @@ ECS::System::~System()
 
 void ECS::System::OnCreate(ECS::EcsManager *ecsManager)
 {
-	std::cout << "Base OnCreate\n";
+//	std::cout << "Base OnCreate\n";
 }

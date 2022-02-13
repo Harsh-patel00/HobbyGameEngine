@@ -58,8 +58,8 @@ namespace ECS
 
 			   cm.AssignComponent<T>(entities[GetEntityIndex(id)]);
 
-			   std::cout << "\nComponent assigned to : " << GetEntityName(id) <<
-			   "\nMask : " << entities[GetEntityIndex(id)].mask << "\n";
+//			   std::cout << "\nComponent assigned to : " << GetEntityName(id) <<
+//			   "\nMask : " << entities[GetEntityIndex(id)].mask << "\n";
 		   }
 
 		   template<typename T>

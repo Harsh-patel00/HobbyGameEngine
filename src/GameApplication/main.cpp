@@ -8,13 +8,11 @@
 
 #include "ECS/Systems/RenderSystem.h"
 #include "ECS/Systems/MoveSystem.h"
+#include "ECS/Systems/InputSystem.h"
+
+#include "EventManager.h"
 
 // Function Prototypes
-void CheckKeys();
-
-void CheckMouse();
-
-void SwapBuffers();
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
@@ -43,8 +41,10 @@ int main()
 
 	auto rs = std::make_unique<RenderSystem>("Render");
 	auto ms = std::make_unique<MoveSystem>("Move");
+	auto is = std::make_unique<InputSystem>("Input");
 	rs->OnCreate(em);
 	ms->OnCreate(em);
+	is->OnCreate(em);
 
 	// Delta time (Locked at 60 fps)
 	// Fixed time step
@@ -52,127 +52,12 @@ int main()
 
 	while (true)
 	{
-		CheckKeys();
-		CheckMouse();
+		is->OnUpdate(dt, em);
 
 		ms->OnUpdate(dt, em);
 
-		// Always call at last before SwapBuffers
+		// Always call at last so that every thing is rendered
 		rs->OnUpdate(dt, em);
-		SwapBuffers();
 	}
 }
 #pragma clang diagnostic pop
-
-// Function Defs
-void CheckMouse()
-{
-	int mousePosX = 0;
-	int mousePosY = 0;
-
-	// On mouse move
-	if(ismouseclick(WM_MOUSEMOVE))
-	{
-		getmouseclick(WM_MOUSEMOVE, mousePosX, mousePosY);
-		clearmouseclick(WM_MOUSEMOVE);
-	}
-
-	#pragma region LeftButton
-
-	if(ismouseclick(WM_LBUTTONDOWN))
-	{
-		getmouseclick(WM_LBUTTONDOWN, mousePosX, mousePosY);
-
-		showerrorbox("Mouse Clicked!");
-
-		clearmouseclick(WM_LBUTTONDOWN);
-	}
-	if(ismouseclick(WM_LBUTTONUP))
-	{
-		getmouseclick(WM_LBUTTONUP, mousePosX, mousePosY);
-		clearmouseclick(WM_LBUTTONUP);
-	}
-	if(ismouseclick(WM_LBUTTONDBLCLK))
-	{
-		getmouseclick(WM_LBUTTONDBLCLK, mousePosX, mousePosY);
-		clearmouseclick(WM_LBUTTONDBLCLK);
-	}
-
-	#pragma endregion
-
-	#pragma region RightButton
-
-	if(ismouseclick(WM_RBUTTONDOWN))
-	{
-		getmouseclick(WM_RBUTTONDOWN, mousePosX, mousePosY);
-		clearmouseclick(WM_RBUTTONDOWN);
-	}
-	if(ismouseclick(WM_RBUTTONUP))
-	{
-		getmouseclick(WM_RBUTTONUP, mousePosX, mousePosY);
-		clearmouseclick(WM_RBUTTONUP);
-	}
-	if(ismouseclick(WM_RBUTTONDBLCLK))
-	{
-		getmouseclick(WM_RBUTTONDBLCLK, mousePosX, mousePosY);
-		clearmouseclick(WM_RBUTTONDBLCLK);
-	}
-
-	#pragma endregion
-
-	#pragma region MiddleButton
-
-	if(ismouseclick(WM_MBUTTONDOWN))
-	{
-		getmouseclick(WM_MBUTTONDOWN, mousePosX, mousePosY);
-		clearmouseclick(WM_MBUTTONDOWN);
-	}
-	if(ismouseclick(WM_MBUTTONUP))
-	{
-		getmouseclick(WM_MBUTTONUP, mousePosX, mousePosY);
-		clearmouseclick(WM_MBUTTONUP);
-	}
-	if(ismouseclick(WM_MBUTTONDBLCLK))
-	{
-		getmouseclick(WM_MBUTTONDBLCLK, mousePosX, mousePosY);
-		clearmouseclick(WM_MBUTTONDBLCLK);
-	}
-
-	#pragma endregion
-}
-
-void CheckKeys()
-{
-	if (kbhit() == true)
-	{
-		if ( GetAsyncKeyState(VK_ESCAPE) || char(toupper(getch())) == 'Q' )
-		{
-			std::cout << "Exiting...\n";
-
-			exit(EXIT_SUCCESS);
-		}
-
-		if (GetAsyncKeyState(VK_RIGHT))
-		{
-
-		}
-
-		if (GetAsyncKeyState(VK_LEFT))
-		{
-
-		}
-
-		if(char(toupper(getch())) == 'G')
-		{
-
-		}
-	}
-}
-
-void SwapBuffers()
-{
-	// Double Buffering
-	setactivepage(getvisualpage());
-	setvisualpage(!getactivepage());
-	clearviewport();
-}

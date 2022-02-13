@@ -22,14 +22,14 @@ ECS::EntityID ECS::EntityManager::CreateEntity()
 										 GetEntityVersion(entities[newIndex].id));
 		entities[newIndex].id = newID;
 		UpdateAliveEntityCount();
-		std::cout << "Entity created from free entities!\n";
+//		std::cout << "Entity created from free entities!\n";
 		return entities[newIndex].id;
 	}
 
 	entities.push_back({CreatedEntityId(entities.size(), 0),
 						ComponentMask(),
 						"Entity" + std::to_string(entities.size())});
-	std::cout << "New entity created!\n";
+//	std::cout << "New entity created!\n";
 	UpdateAliveEntityCount();
 	return entities.back().id;
 }

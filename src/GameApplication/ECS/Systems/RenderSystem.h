@@ -18,11 +18,20 @@ class RenderSystem : ECS::System
 			initwindow(800, 600);
 		}
 
+	private:
+		void SwapBuffers()
+		{
+			// Double Buffering
+			setactivepage(getvisualpage());
+			setvisualpage(!getactivepage());
+			clearviewport();
+		}
+
 	public:
 		void OnCreate(ECS::EcsManager *em) override
 		{
 			ECS::System::OnCreate(em);
-			std::cout << "Overridden OnCreate...\n";
+//			std::cout << "Overridden OnCreate...\n";
 		}
 
 		void OnUpdate(float dt, ECS::EcsManager *em) override
@@ -62,6 +71,7 @@ class RenderSystem : ECS::System
 						break;
 				}
 			}
+			SwapBuffers();
 		}
 };
 
