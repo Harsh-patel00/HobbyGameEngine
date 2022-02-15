@@ -5,26 +5,12 @@
 #include "GEngine/EcsCore/System.h"
 #include "ECS/Components/Transform.h"
 #include "ECS/Components/Renderer.h"
+#include "ECS/Components/InputCon.h"
 
 #include "EventManager.h"
 
 #ifndef GAMEENGINE_MOVESYSTEM_H
 #define GAMEENGINE_MOVESYSTEM_H
-
-void HandleRightKey(int);
-void HandleLeftKey(int);
-
-void HandleRightKey(int x)
-{
-	std::cout << "Right key pressed!\nValue of x : " << x << "\nFrom move system\n";
-
-	EventManager::LeftKeyPressed.RemoveListener(HandleLeftKey);
-}
-
-void HandleLeftKey(int x)
-{
-	std::cout << "Left key pressed!\nValue of x : " << x << "\nFrom move system\n";
-}
 
 class MoveSystem : ECS::System
 {
@@ -37,18 +23,33 @@ class MoveSystem : ECS::System
 			ECS::System::OnCreate(em);
 //			std::cout << "Overridden OnCreate...\n";
 
-			EventManager::RightKeyPressed.AddListener(HandleRightKey);
-			EventManager::LeftKeyPressed.AddListener(HandleLeftKey);
+//			EventManager::RightKeyPressed.AddListener(MoveRight);
+//			EventManager::LeftKeyPressed.AddListener(MoveLeft);
 		}
 
 		void OnUpdate(float dt, ECS::EcsManager *em) override
 		{
-			for (auto ent : em->EntitiesWithComponents<Transform, Renderer>())
+			for (auto ent : em->EntitiesWithComponents<Transform, Renderer, InputControl>())
 			{
 				auto tc = em->GetComponent<Transform>(ent);
-				tc->position.y += 10 * dt;
+				auto ic = em->GetComponent<InputControl>(ent);
+
+				if(ic->right)
+				{
+					tc->position.x += 10;
+				}
+
+				if(ic->left)
+				{
+					tc->position.x -= 10;
+				}
+
+				// Set the updated position
 				em->SetComponentValue<Transform>({tc->position}, ent);
+				// Reset the values of the input so that the above conditions are always false
+				em->SetComponentValue<InputControl>({}, ent);
 			}
+
 		}
 };
 

@@ -5,6 +5,7 @@
 
 #include "ECS/Components/Transform.h"
 #include "ECS/Components/Renderer.h"
+#include "ECS/Components/InputCon.h"
 
 #include "ECS/Systems/RenderSystem.h"
 #include "ECS/Systems/MoveSystem.h"
@@ -27,6 +28,7 @@ int main()
 	em->SetEntityName(circleEnt, "Circle");
 	em->AssignComponent<Renderer>(circleEnt);
 	em->AssignComponent<Transform>(circleEnt);
+	em->AssignComponent<InputControl>(circleEnt);
 
 	em->SetComponentValue<Transform>({{400, 300, 0}}, circleEnt);
 	em->SetComponentValue<Renderer>({Shape::Circle, 100},circleEnt);
@@ -35,9 +37,14 @@ int main()
 	em->SetEntityName(squareEnt, "Square");
 	em->AssignComponent<Renderer>(squareEnt);
 	em->AssignComponent<Transform>(squareEnt);
+	em->AssignComponent<InputControl>(squareEnt);
 
 	em->SetComponentValue<Transform>({{100, 200, 0}}, squareEnt);
 	em->SetComponentValue<Renderer>({Shape::Square, 0, {{150, 120, 0}}},squareEnt);
+
+	auto inputController = em->CreateEntity();
+	em->SetEntityName(inputController, "UserInput");
+	em->AssignComponent<InputControl>(inputController);
 
 	auto rs = std::make_unique<RenderSystem>("Render");
 	auto ms = std::make_unique<MoveSystem>("Move");

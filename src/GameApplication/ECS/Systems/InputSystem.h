@@ -3,6 +3,9 @@
 //
 
 #include "GEngine/EcsCore/System.h"
+
+#include "ECS/Components/InputCon.h"
+
 #include "EventManager.h"
 
 
@@ -92,7 +95,7 @@ class InputSystem : ECS::System
 #pragma endregion
 		}
 
-		void CheckKeys()
+		void CheckKeys(ECS::EcsManager *em)
 		{
 			if (kbhit() == true)
 			{
@@ -105,12 +108,24 @@ class InputSystem : ECS::System
 
 				if (GetAsyncKeyState(VK_RIGHT))
 				{
-					EventManager::NotifyRightKeyPressed(4);
+					for (auto ent : em->EntitiesWithComponents<InputControl>())
+					{
+						auto ic = em->GetComponent<InputControl>(ent);
+						em->SetComponentValue<InputControl>({ic->right = true, false, false, false}, ent);
+					}
+
+//					EventManager::NotifyRightKeyPressed(4);
 				}
 
 				if (GetAsyncKeyState(VK_LEFT))
 				{
-					EventManager::NotifyLeftKeyPressed(8);
+					for (auto ent : em->EntitiesWithComponents<InputControl>())
+					{
+						auto ic = em->GetComponent<InputControl>(ent);
+						em->SetComponentValue<InputControl>({false, ic->left = true, false, false}, ent);
+					}
+
+//					EventManager::NotifyLeftKeyPressed(8);
 				}
 
 				if(char(toupper(getch())) == 'G')
@@ -129,7 +144,7 @@ class InputSystem : ECS::System
 
 		void OnUpdate(float dt, ECS::EcsManager *em) override
 		{
-			CheckKeys();
+			CheckKeys(em);
 			CheckMouse();
 		}
 };

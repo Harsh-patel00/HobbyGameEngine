@@ -17,7 +17,6 @@ namespace GEngine
 		/*
 		 * GameEngine contains:
 		 * 1. Reference to GameWorld
-		 * 2. Reference to Coordinator (EcsCore)
 		 */
 
 		private:

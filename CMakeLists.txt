@@ -7,11 +7,6 @@ link_directories(GameEngine "ExternalDependencies\\lib\\")
 
 add_executable(GameEngine src/GameApplication/main.cpp
         src/GGraphics/GWindow/Window.cpp
-        src/GGraphics/Draw.cpp
-        include/GGraphics/Draw.h
-        include/GGraphics/Shape.h
-        src/GEngine/GameObject.cpp
-        include/GEngine/GameObject.h
         include/GEngine/GameWorld.h
         src/GEngine/GameWorld.cpp
         include/GEngine/GameEngine.h
@@ -27,7 +22,7 @@ add_executable(GameEngine src/GameApplication/main.cpp
         src/GEngine/EcsCore/System.cpp
         src/GEngine/EcsCore/EcsManager.cpp
         include/GEngine/EcsCore/EcsManager.h
-        src/GameApplication/ECS/Components/Transform.h src/GameApplication/ECS/Components/Renderer.h src/GameApplication/ECS/Systems/RenderSystem.h src/GameApplication/ECS/Systems/MoveSystem.h src/GameApplication/ECS/Systems/InputSystem.h include/GEngine/Action.h src/GameApplication/EventManager.h)
+        src/GameApplication/ECS/Components/Transform.h src/GameApplication/ECS/Components/Renderer.h src/GameApplication/ECS/Systems/RenderSystem.h src/GameApplication/ECS/Systems/MoveSystem.h src/GameApplication/ECS/Systems/InputSystem.h include/GEngine/Action.h src/GameApplication/EventManager.h src/GameApplication/ECS/Components/InputCon.h)
 
 include_directories(GameEngine "ExternalDependencies\\include\\" "include\\" "src\\GameApplication\\")
 
