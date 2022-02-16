@@ -49,6 +49,7 @@ namespace ECS
 		   ComponentMask componentMask{};
 		   bool testAllEntities{false};
 
+		   // Iterator implementation because we have to use this in a range-based for loop
 		   Iterator(EntityManager *pScene, EntityIndex index, ComponentMask mask, bool testAllEntities) :
 				   pScene(pScene), index(index), componentMask(mask), testAllEntities(testAllEntities) {}
 

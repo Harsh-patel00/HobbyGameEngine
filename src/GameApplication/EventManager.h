@@ -7,26 +7,22 @@
 #ifndef GAMEENGINE_EVENTMANAGER_H
 #define GAMEENGINE_EVENTMANAGER_H
 
+/*
+ * This class stores all Actions that anyone can subscribe to!
+ */
+
 class EventManager
 {
 	public:
-		static Action<int> RightKeyPressed;
-		static Action<int> LeftKeyPressed;
+		static Action<> TestAction;
 
 	public:
-		void static NotifyRightKeyPressed(int x)
+		void static NotifyTestActionPerformed()
 		{
-			RightKeyPressed.Invoke(x);
+			TestAction.Invoke();
 		}
-
-		void static NotifyLeftKeyPressed(int x)
-		{
-			LeftKeyPressed.Invoke(x);
-		}
-
 };
 
-Action<int> EventManager::RightKeyPressed{};
-Action<int> EventManager::LeftKeyPressed{};
+Action<> EventManager::TestAction{};
 
 #endif //GAMEENGINE_EVENTMANAGER_H

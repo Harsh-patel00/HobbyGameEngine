@@ -4,10 +4,10 @@
 
 #include "GGraphics/GWindow/Window.h"
 
-GGraphics::Window::Window(int width, int height, char *title)
+GGraphics::Window::Window(int width, int height, const std::string& title)
 {
 	// Initialization of windows
-	_windowId = initwindow(width + 9, height + 13, title, 0, 0, true, true);
+	_windowId = initwindow(width + 9, height + 13, title.c_str(), 0, 0, true, true);
 	_windowHeight = height;
 	_windowWidth = width;
 }

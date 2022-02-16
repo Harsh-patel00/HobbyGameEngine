@@ -24,6 +24,8 @@ int main()
 	auto world = engine.GetGameWorld();
 	auto em = world->GetEcsManager();
 
+	EventManager::TestAction.AddListener([](){std::cout << "Test action performed\n";});
+
 	auto circleEnt = em->CreateEntity();
 	em->SetEntityName(circleEnt, "Circle");
 	em->AssignComponent<Renderer>(circleEnt);
@@ -46,23 +48,33 @@ int main()
 	em->SetEntityName(inputController, "UserInput");
 	em->AssignComponent<InputControl>(inputController);
 
+	// All the systems will be unique pointer as we only want 1 system for a particular task
 	auto rs = std::make_unique<RenderSystem>("Render");
-	auto ms = std::make_unique<MoveSystem>("Move");
-	auto is = std::make_unique<InputSystem>("Input");
 	rs->OnCreate(em);
+
+	auto ms = std::make_unique<MoveSystem>("Move");
 	ms->OnCreate(em);
+
+	auto is = std::make_unique<InputSystem>("Input");
 	is->OnCreate(em);
+
 
 	// Delta time (Locked at 60 fps)
 	// Fixed time step
 	float dt = 1/60.f;
 
+	// Perform a test action before starting render loop
+	EventManager::NotifyTestActionPerformed();
+
 	while (true)
 	{
+		// Input System
 		is->OnUpdate(dt, em);
 
+		// Move System
 		ms->OnUpdate(dt, em);
 
+		// Render System
 		// Always call at last so that every thing is rendered
 		rs->OnUpdate(dt, em);
 	}

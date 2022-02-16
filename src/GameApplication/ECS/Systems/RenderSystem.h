@@ -8,14 +8,20 @@
 #include "graphics.h"
 
 #include "GEngine/EcsCore/System.h"
+
+#include "GGraphics/GWindow/Window.h"
+
 #include "ECS/Components/Renderer.h"
 
 class RenderSystem : ECS::System
 {
+	private:
+		GGraphics::Window window{800, 600, "My Window"};
+
 	public:
 		explicit RenderSystem(const std::string &name) : System(name)
 		{
-			initwindow(800, 600);
+			window.SetActive();
 		}
 
 	private:
@@ -30,12 +36,14 @@ class RenderSystem : ECS::System
 	public:
 		void OnCreate(ECS::EcsManager *em) override
 		{
+			// Calling base OnCreate (As of now it does nothing)
 			ECS::System::OnCreate(em);
 //			std::cout << "Overridden OnCreate...\n";
 		}
 
 		void OnUpdate(float dt, ECS::EcsManager *em) override
 		{
+			// Looping through all entities with Transform and Render component
 			for (auto entId : em->EntitiesWithComponents<Renderer, Transform>())
 			{
 				auto rc = em->GetComponent<Renderer>(entId);

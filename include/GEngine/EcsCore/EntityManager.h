@@ -12,8 +12,11 @@ namespace ECS
    class EntityManager
    {
 	   public:
+		   // List of all entities created
 		   std::vector<Entity> entities;
+		   // List of entities that are deleted
 		   std::vector<EntityIndex> freeEntities;
+		   // Count of entities that not deleted
 		   uint AliveEntityCount{};
 
 		   EntityIndex GetEntityIndex(EntityID);
@@ -24,10 +27,13 @@ namespace ECS
 
 	   private:
 		   void Init();
+		   // Entity id contains it's index in the entities array and the entity version
+		   // We maintain the version because it helps in identifying that if the entity is deleted and the reused
 		   EntityID CreatedEntityId(EntityIndex entityIndex, EntityVersion entityVersion);
 		   EntityVersion GetEntityVersion(EntityID);
 		   void UpdateAliveEntityCount();
 
+		   // Checks if the component is present/assigned to the entity or not
 		   template<typename T>
 		   bool IsComponentPresent(EntityID entityId)
 		   {
@@ -35,12 +41,18 @@ namespace ECS
 		   }
 
 	   public:
+		   // Create a new entity
 		   EntityID CreateEntity();
+		   // Destroy the created entity
 		   void DestroyEntity(EntityID &id);
+		   // Set the entity name (Easy to debug)
 		   void SetEntityName(EntityID id, const std::string &name);
+		   // Get the entity name (Easy to debug)
 		   std::string GetEntityName(EntityID id);
+		   // To see if the entity is not deleted
 		   bool IsEntityValid(EntityID entityId);
 
+		   // Assign the component to the entity
 		   template <typename T>
 		   void AssignComponent(EntityID id, ComponentManager &cm)
 		   {
@@ -62,6 +74,7 @@ namespace ECS
 //			   "\nMask : " << entities[GetEntityIndex(id)].mask << "\n";
 		   }
 
+		   // Remove assigned component from the entity
 		   template<typename T>
 		   void RemoveComponent(EntityID id)
 		   {
@@ -81,6 +94,9 @@ namespace ECS
 			   std::cout << typeid(T).name() << " Component removed successfully!\n";
 		   }
 
+		   // Try to get the component from the entity
+		   // If the component is present, then it returns bool and stores the component in 'val' param
+		   // Else it will return false
 		   template<typename T>
 		   bool TryGetComponent(EntityID id, T &val, ComponentManager &cm)
 		   {
@@ -100,6 +116,7 @@ namespace ECS
 			   return true;
 		   }
 
+		   // Get component from the entity
 		   template<typename T>
 		   T* GetComponent(EntityID id, ComponentManager &cm)
 		   {
@@ -118,6 +135,7 @@ namespace ECS
 			   return cm.GetComponentFromList<T>(GetEntityIndex(id));
 		   }
 
+		   // Set the component value
 		   template<typename T>
 		   void SetComponentValue(T value, EntityID id, ComponentManager &cm)
 		   {

@@ -11,6 +11,8 @@ namespace GEngine
 	class GameWorld
 	{
 		private:
+			// Maintains a unique copy of EcsManager in memory
+			// It's an unique pointer because we don't want another copy of EcsManager in memory
 			std::unique_ptr<ECS::EcsManager> ecsManager{nullptr};
 
 		public:
@@ -18,6 +20,7 @@ namespace GEngine
 			~GameWorld();
 
 		public:
+			// Helper function to get the reference to EcsManager
 			ECS::EcsManager* GetEcsManager();
 
 		private:

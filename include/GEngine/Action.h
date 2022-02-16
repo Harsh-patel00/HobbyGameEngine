@@ -14,14 +14,19 @@ template<typename... Args>
 class Action
 {
 	private:
+		// Unique ActionID to identify every unique actions
 		static int ActionId;
 		using FuncType = void (*)(Args...);
 	public:
+		// List of all registered function
 		std::vector<FuncType> functions;
+		// This maps every function with its hash (This way function is easier to find)
 		std::map<std::size_t, FuncType> dictOfAllFunctionsWithHash;
+		// This maps every function's list with its ActionID
 		std::map<int, std::vector<FuncType>> actionsDict;
 
 	public:
+		// Whenever a new action is created, ActionID is incremented
 		explicit Action()
 		{
 			ActionId++;
@@ -29,6 +34,7 @@ class Action
 		~Action()= default;
 
 	private:
+		// Create a function's hash
 		std::size_t GetFunctionHash(void (*func)(Args...))
 		{
 			std::hash<void (*)(Args...)> funcHash;
@@ -36,6 +42,7 @@ class Action
 			return funcHash(func);
 		}
 
+		// Get the function based on hash value from the dictionary/map
 		FuncType GetFunctionFromHash(std::size_t funcHash)
 		{
 			auto it = dictOfAllFunctionsWithHash.find(funcHash);
@@ -52,8 +59,10 @@ class Action
 		}
 
 	public:
+		// This function is used to call all the methods that are subscribed/listening to a particular action
 		void Invoke(const Args&... args)
 		{
+			// Only invoke functions of same action
 			for (auto k : actionsDict)
 			{
 				if(ActionId == k.first)
@@ -66,10 +75,13 @@ class Action
 			}
 		}
 
+		// Add a function as a listener to an Action
 		void AddListener(void (*func)(Args...))
 		{
+			// Checking if the function is already a listener
 			auto it0 = dictOfAllFunctionsWithHash.find(GetFunctionHash(func));
 
+			// If not, get the hash and add it to the map
 			if(it0 == dictOfAllFunctionsWithHash.end())
 			{
 				dictOfAllFunctionsWithHash.insert(std::pair<std::size_t, FuncType>(GetFunctionHash(func), func));
@@ -80,6 +92,7 @@ class Action
 				return;
 			}
 
+			// Check if the action is already present
 			auto it = actionsDict.find(ActionId);
 
 			// If action is already registered
@@ -95,8 +108,10 @@ class Action
 			}
 		}
 
+		// Remove the function as a listener of an Action
 		void RemoveListener(void (*func)(Args...))
 		{
+			// Find the function in the map
 			auto it = dictOfAllFunctionsWithHash.find(GetFunctionHash(func));
 
 			// If function is already registered
@@ -105,10 +120,12 @@ class Action
 			{
 				for (auto k : actionsDict)
 				{
+					// Get the required Action from map
 					if(ActionId == k.first)
 					{
 						for (int i = 0; i < actionsDict[ActionId].size(); ++i)
 						{
+							// Remove only the specified function from Action
 							if(GetFunctionHash(actionsDict[ActionId][i]) == GetFunctionHash(func))
 							{
 								actionsDict[ActionId].erase(actionsDict[ActionId].begin() + i);
@@ -117,6 +134,7 @@ class Action
 					}
 				}
 
+				// Remove the function from the map, as it's no longer a valid function
 				dictOfAllFunctionsWithHash.erase(GetFunctionHash(func));
 			}
 			else

@@ -103,8 +103,6 @@ namespace GMath
 			return MVector(this->x + s, this->y + s, this->z + s);
 		}
 
-
-
 		MVector operator-()
 		{
 			return MVector(-this->x, -this->y, -this->z);

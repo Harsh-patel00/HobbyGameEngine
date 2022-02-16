@@ -1,5 +1,6 @@
 //
 // Created by Harsh on 15-01-2022.
+// This file includes all the typedefs related to ECS and some structs and functions
 //
 
 #include <iostream>
@@ -38,6 +39,7 @@ namespace ECS
    // Each entity can have max_components number of components
    using ComponentMask = std::bitset<MAX_COMPONENTS>;
 
+   // Actual entity which will be stored in memory
    struct Entity
    {
 	   EntityID id{};

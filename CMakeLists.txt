@@ -16,8 +16,6 @@ add_executable(GameEngine src/GameApplication/main.cpp
         src/GEngine/EcsCore/EntityManager.cpp
         src/GEngine/EcsCore/ComponentManager.cpp
         include/GEngine/EcsCore/ComponentManager.h
-        src/GEngine/EcsCore/SystemManager.cpp
-        include/GEngine/EcsCore/SystemManager.h
         include/GEngine/EcsCore/System.h
         src/GEngine/EcsCore/System.cpp
         src/GEngine/EcsCore/EcsManager.cpp

@@ -17,10 +17,16 @@ namespace ECS
 		   ~System();
 
 	   private:
+		   // Prints 'name' is initialized (For debugging)
 		   void Init(const std::string &name);
 
 	   public:
+		   // NOTE : This function require EcsManager because we may have to go through all entities
+		   // so this is the way to get access to entities
+
+		   // This function is called when the system is created
 		   virtual void OnCreate(EcsManager *ecsManager);
+		   // This is a pure virtual function, which runs every frame
 		   virtual void OnUpdate(float dt, EcsManager *ecsManager) = 0;
    };
 

@@ -14,17 +14,20 @@ namespace GGraphics
 	class Window
 	{
 	private:
+			// These are pretty obvious -_-
 		int _windowId{};
 		int _windowWidth{};
 		int _windowHeight{};
 
 	public:
+			// Pretty obvious too
 		int GetActiveWindowWidth() const;
 		int GetActiveWindowHeight() const;
+		// Set the active window
 		void SetActive() const;
 
 	public:
-		Window(int width, int height, char *title);
+		Window(int width, int height, const std::string& title);
 		~Window();
 	};
 
