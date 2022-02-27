@@ -15,7 +15,7 @@ class Action
 {
 	private:
 		// Unique ActionID to identify every unique actions
-		static int ActionId;
+		int ActionId;
 		using FuncType = void (*)(Args...);
 	public:
 		// List of all registered function
@@ -143,8 +143,5 @@ class Action
 			}
 		}
 };
-
-template<typename... Args>
-int Action<Args...>::ActionId = -1;
 
 #endif //GAMEENGINE_ACTION_H

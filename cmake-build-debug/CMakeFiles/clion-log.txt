@@ -1,4 +1,0 @@
-C:\Users\hp987\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\213.6777.58\bin\cmake\win\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=C:/Users/hp987/AppData/Local/JetBrains/Toolbox/apps/CLion/ch-0/213.6777.58/bin/ninja/win/ninja.exe -G Ninja C:\Harsh\Projects\GameEngine
--- Configuring done
--- Generating done
--- Build files have been written to: C:/Harsh/Projects/GameEngine/cmake-build-debug
