@@ -3,32 +3,31 @@ project(GameEngine)
 
 set(CMAKE_CXX_STANDARD 20)
 
-link_directories(GameEngine "ExternalDependencies\\lib\\")
+link_directories(GameEngine "ExternalDependencies/BGI/lib/")
 
-add_executable(GameEngine src/GameApplication/main.cpp
-        src/GGraphics/GWindow/Window.cpp
-        include/GEngine/GameWorld.h
-        src/GEngine/GameWorld.cpp
-        include/GEngine/GameEngine.h
-        src/GEngine/GameEngine.cpp
-        include/GEngine/EcsCore/Prerequisite.h
-        include/GEngine/EcsCore/EntityManager.h
+include_directories(GameEngine
+        "ExternalDependencies/BGI/include/"
+        "./include/"
+        "./src/GameApplication/")
+
+add_executable(GameEngine
+        src/GameApplication/main.cpp
+        # ----- ECS Core -----
         src/GEngine/EcsCore/EntityManager.cpp
         src/GEngine/EcsCore/ComponentManager.cpp
-        include/GEngine/EcsCore/ComponentManager.h
-        include/GEngine/EcsCore/System.h
         src/GEngine/EcsCore/System.cpp
         src/GEngine/EcsCore/EcsManager.cpp
-        include/GEngine/EcsCore/EcsManager.h
-        src/GameApplication/ECS/Components/Transform.h
-        src/GameApplication/ECS/Components/Renderer.h
-        src/GameApplication/ECS/Systems/RenderSystem.h
-        src/GameApplication/ECS/Systems/MoveSystem.h
-        src/GameApplication/ECS/Systems/InputSystem.h
-        include/GEngine/Action.h
-        src/GameApplication/EventManager.h
-        src/GameApplication/ECS/Components/InputCon.h src/GEngine/Action.cpp)
+        # ----- Game Engine -----
+        src/GGraphics/GWindow/Window.cpp
+        src/GEngine/GameWorld.cpp
+        src/GEngine/GameEngine.cpp
+        # ----- ECS Components -----
+        src/GameApplication/ECS/Components/Transform.cpp
+        src/GameApplication/ECS/Components/Renderer.cpp
+        src/GameApplication/ECS/Components/InputCon.cpp
+        # ----- ECS Systems -----
+        src/GameApplication/ECS/Systems/src/InputSystem.cpp)
 
-include_directories(GameEngine "ExternalDependencies\\include\\" "include\\" "src\\GameApplication\\")
+
 
 target_link_libraries(GameEngine libbgi.a)
