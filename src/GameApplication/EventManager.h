@@ -15,14 +15,16 @@ class EventManager
 {
 	public:
 		static Action<> TestAction;
+		static Action<> TestAction2;
 
 	public:
-		void static NotifyTestActionPerformed()
+		void static NotifyTestActionPerformed(const std::string& name)
 		{
-			TestAction.Invoke();
+			TestAction.Invoke(name, "TestAction");
 		}
 };
 
 Action<> EventManager::TestAction{};
+Action<> EventManager::TestAction2{};
 
 #endif //GAMEENGINE_EVENTMANAGER_H

@@ -12,6 +12,17 @@
 #ifndef GAMEENGINE_INPUTSYSTEM_H
 #define GAMEENGINE_INPUTSYSTEM_H
 
+void MyFunc()
+{
+	std::cout << "My Func called\n";
+}
+
+void MyFunc2()
+{
+	std::cout << "My Func 2 called\n";
+	EventManager::TestAction2.RemoveListener(MyFunc2);
+}
+
 class InputSystem : ECS::System
 {
 	public:
@@ -60,6 +71,10 @@ class InputSystem : ECS::System
 			{
 				getmouseclick(WM_RBUTTONDOWN, mousePosX, mousePosY);
 				clearmouseclick(WM_RBUTTONDOWN);
+
+				EventManager::NotifyTestActionPerformed("RbuttonDown");
+				EventManager::TestAction2.Invoke("RbuttonDown", "TestAction2");
+
 			}
 			if(ismouseclick(WM_RBUTTONUP))
 			{
@@ -130,7 +145,8 @@ class InputSystem : ECS::System
 
 				if(char(toupper(getch())) == 'G')
 				{
-
+					std::cout << "Adding myfunc as listener...\n";
+					EventManager::TestAction2.AddListener(MyFunc2);
 				}
 			}
 		}
@@ -140,6 +156,7 @@ class InputSystem : ECS::System
 		{
 			ECS::System::OnCreate(em);
 //			std::cout << "Overridden OnCreate...\n";
+			EventManager::TestAction.AddListener(MyFunc);
 		}
 
 		void OnUpdate(float dt, ECS::EcsManager *em) override

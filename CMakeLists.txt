@@ -26,9 +26,8 @@ add_executable(GameEngine src/GameApplication/main.cpp
         src/GameApplication/ECS/Systems/MoveSystem.h
         src/GameApplication/ECS/Systems/InputSystem.h
         include/GEngine/Action.h
-#        src/GEngine/Action.cpp
         src/GameApplication/EventManager.h
-        src/GameApplication/ECS/Components/InputCon.h)
+        src/GameApplication/ECS/Components/InputCon.h src/GEngine/Action.cpp)
 
 include_directories(GameEngine "ExternalDependencies\\include\\" "include\\" "src\\GameApplication\\")
 

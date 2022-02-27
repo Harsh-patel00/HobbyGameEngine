@@ -14,6 +14,16 @@
 #include "EventManager.h"
 
 // Function Prototypes
+void TestFunc()
+{
+	std::cout << "Test action performed\n";
+}
+
+void TestFunc2()
+{
+	std::cout << "Test action 2 performed\n";
+}
+
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
@@ -24,7 +34,8 @@ int main()
 	auto world = engine.GetGameWorld();
 	auto em = world->GetEcsManager();
 
-	EventManager::TestAction.AddListener([](){std::cout << "Test action performed\n";});
+	EventManager::TestAction.AddListener(TestFunc);
+	EventManager::TestAction2.AddListener(TestFunc2);
 
 	auto circleEnt = em->CreateEntity();
 	em->SetEntityName(circleEnt, "Circle");
@@ -64,7 +75,7 @@ int main()
 	float dt = 1/60.f;
 
 	// Perform a test action before starting render loop
-	EventManager::NotifyTestActionPerformed();
+	EventManager::NotifyTestActionPerformed("Main");
 
 	while (true)
 	{
