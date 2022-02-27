@@ -19,11 +19,11 @@ ECS::EntityID ECS::EntityManager::CreateEntity()
 		freeEntities.pop_back();
 
 		EntityID newID = CreatedEntityId(newIndex,
-										 GetEntityVersion(entities[newIndex].id));
-		entities[newIndex].id = newID;
+										 GetEntityVersion(entities[newIndex].eid));
+		entities[newIndex].eid = newID;
 		UpdateAliveEntityCount();
 //		std::cout << "Entity created from free entities!\n";
-		return entities[newIndex].id;
+		return entities[newIndex].eid;
 	}
 
 	entities.push_back({CreatedEntityId(entities.size(), 0),
@@ -31,7 +31,7 @@ ECS::EntityID ECS::EntityManager::CreateEntity()
 						"Entity" + std::to_string(entities.size())});
 //	std::cout << "New entity created!\n";
 	UpdateAliveEntityCount();
-	return entities.back().id;
+	return entities.back().eid;
 }
 
 void ECS::EntityManager::DestroyEntity(ECS::EntityID &id)
@@ -44,7 +44,7 @@ void ECS::EntityManager::DestroyEntity(ECS::EntityID &id)
 
 	std::cout << GetEntityName(id) << " is destroyed!\n";
 	EntityID newID = CreatedEntityId((EntityIndex)-1, GetEntityVersion(id) + 1);
-	entities[GetEntityIndex(id)].id = newID;
+	entities[GetEntityIndex(id)].eid = newID;
 	entities[GetEntityIndex(id)].mask.reset();
 	freeEntities.push_back(GetEntityIndex(id));
 	id = newID;
@@ -64,22 +64,24 @@ void ECS::EntityManager::SetEntityName(ECS::EntityID id, const std::string &name
 
 ECS::EntityIndex ECS::EntityManager::GetEntityIndex(ECS::EntityID entityId)
 {
-   return entityId >> 32;
+   return entityId.entId >> 32;
 }
 
 ECS::EntityVersion ECS::EntityManager::GetEntityVersion(ECS::EntityID entityId)
 {
-   return (EntityVersion)entityId;
+   return (EntityVersion)entityId.entId;
 }
 
 bool ECS::EntityManager::IsEntityValid(ECS::EntityID entityId)
 {
-   return (entityId >> 32) != (EntityIndex)-1;
+   return (entityId.entId >> 32) != (EntityIndex)-1;
 }
 
 ECS::EntityID ECS::EntityManager::CreatedEntityId(ECS::EntityIndex entityIndex, ECS::EntityVersion entityVersion)
 {
-	return ((EntityID) entityIndex << 32) |  ((EntityID)entityVersion);
+	EntityID entityId{};
+	entityId.entId = ((ull)entityIndex << 32) |  ((ull)entityVersion);
+	return entityId;
 }
 
 void ECS::EntityManager::UpdateAliveEntityCount()

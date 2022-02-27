@@ -56,7 +56,7 @@ namespace ECS
 		   EntityID operator*() const
 		   {
 			   // give back the entityID we're currently at
-			   return pScene->entities[index].id;
+			   return pScene->entities[index].eid;
 		   }
 
 		   bool operator==(const Iterator& other) const
@@ -75,7 +75,7 @@ namespace ECS
 		   {
 			   return
 				   // It's a valid entity ID
-					   pScene->IsEntityValid(pScene->entities[index].id) &&
+					   pScene->IsEntityValid(pScene->entities[index].eid) &&
 					   // It has the correct component mask
 					   (testAllEntities || componentMask == (componentMask & pScene->entities[index].mask));
 		   }
@@ -98,7 +98,7 @@ namespace ECS
 		   EntityIndex firstIndex{0};
 		   while(firstIndex < pEntityManager->entities.size() &&
 		         componentMask != (componentMask & pEntityManager->entities[firstIndex].mask) ||
-		         !pEntityManager->IsEntityValid(pEntityManager->entities[firstIndex].id))
+		         !pEntityManager->IsEntityValid(pEntityManager->entities[firstIndex].eid))
 		   {
 			   firstIndex++;
 		   }
