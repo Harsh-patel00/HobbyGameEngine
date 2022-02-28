@@ -18,21 +18,21 @@ class MoveSystem : ECS::System
 		explicit MoveSystem(const std::string &name) : System(name){}
 
 	public:
-		void OnCreate(ECS::EcsManager *em) override
+		void OnCreate(GEngine::GameWorld *world) override
 		{
-			ECS::System::OnCreate(em);
+			ECS::System::OnCreate(world);
 //			std::cout << "Overridden OnCreate...\n";
 
 //			EventManager::RightKeyPressed.AddListener(MoveRight);
 //			EventManager::LeftKeyPressed.AddListener(MoveLeft);
 		}
 
-		void OnUpdate(float dt, ECS::EcsManager *em) override
+		void OnUpdate(float dt, GEngine::GameWorld *world) override
 		{
-			for (auto ent : em->EntitiesWithComponents<Transform, Renderer, InputControl>())
+			for (auto ent : world->GetEcsManager()->EntitiesWithComponents<Transform, Renderer, InputControl>())
 			{
-				auto tc = em->GetComponent<Transform>(ent);
-				auto ic = em->GetComponent<InputControl>(ent);
+				auto tc = world->GetEcsManager()->GetComponent<Transform>(ent);
+				auto ic = world->GetEcsManager()->GetComponent<InputControl>(ent);
 
 				if(ic->right)
 				{
@@ -45,9 +45,9 @@ class MoveSystem : ECS::System
 				}
 
 				// Set the updated position
-				em->SetComponentValue<Transform>({tc->position}, ent);
+				world->GetEcsManager()->SetComponentValue<Transform>({tc->position}, ent);
 				// Reset the values of the input so that the above conditions are always false
-				em->SetComponentValue<InputControl>({}, ent);
+				world->GetEcsManager()->SetComponentValue<InputControl>({}, ent);
 			}
 
 		}

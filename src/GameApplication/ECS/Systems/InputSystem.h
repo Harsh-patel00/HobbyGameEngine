@@ -152,16 +152,16 @@ class InputSystem : ECS::System
 		}
 
 	public:
-		void OnCreate(ECS::EcsManager *em) override
+		void OnCreate(GEngine::GameWorld *world) override
 		{
-			ECS::System::OnCreate(em);
+			ECS::System::OnCreate(world);
 //			std::cout << "Overridden OnCreate...\n";
 			EventManager::TestAction.AddListener(MyFunc);
 		}
 
-		void OnUpdate(float dt, ECS::EcsManager *em) override
+		void OnUpdate(float dt, GEngine::GameWorld *world) override
 		{
-			CheckKeys(em);
+			CheckKeys(world->GetEcsManager());
 			CheckMouse();
 		}
 };

@@ -61,13 +61,13 @@ int main()
 
 	// All the systems will be unique pointer as we only want 1 system for a particular task
 	auto rs = std::make_unique<RenderSystem>("Render");
-	rs->OnCreate(em);
+	rs->OnCreate(world);
 
 	auto ms = std::make_unique<MoveSystem>("Move");
-	ms->OnCreate(em);
+	ms->OnCreate(world);
 
 	auto is = std::make_unique<InputSystem>("Input");
-	is->OnCreate(em);
+	is->OnCreate(world);
 
 
 	// Delta time (Locked at 60 fps)
@@ -80,14 +80,14 @@ int main()
 	while (true)
 	{
 		// Input System
-		is->OnUpdate(dt, em);
+		is->OnUpdate(dt, world);
 
 		// Move System
-		ms->OnUpdate(dt, em);
+		ms->OnUpdate(dt, world);
 
 		// Render System
 		// Always call at last so that every thing is rendered
-		rs->OnUpdate(dt, em);
+		rs->OnUpdate(dt, world);
 	}
 }
 #pragma clang diagnostic pop

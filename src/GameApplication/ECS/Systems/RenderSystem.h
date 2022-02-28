@@ -34,20 +34,20 @@ class RenderSystem : ECS::System
 		}
 
 	public:
-		void OnCreate(ECS::EcsManager *em) override
+		void OnCreate(GEngine::GameWorld *world) override
 		{
 			// Calling base OnCreate (As of now it does nothing)
-			ECS::System::OnCreate(em);
+			ECS::System::OnCreate(world);
 //			std::cout << "Overridden OnCreate...\n";
 		}
 
-		void OnUpdate(float dt, ECS::EcsManager *em) override
+		void OnUpdate(float dt, GEngine::GameWorld *world) override
 		{
 			// Looping through all entities with Transform and Render component
-			for (auto entId : em->EntitiesWithComponents<Renderer, Transform>())
+			for (auto entId : world->GetEcsManager()->EntitiesWithComponents<Renderer, Transform>())
 			{
-				auto rc = em->GetComponent<Renderer>(entId);
-				auto tc = em->GetComponent<Transform>(entId);
+				auto rc = world->GetEcsManager()->GetComponent<Renderer>(entId);
+				auto tc = world->GetEcsManager()->GetComponent<Transform>(entId);
 
 				switch (rc->drawShape)
 				{

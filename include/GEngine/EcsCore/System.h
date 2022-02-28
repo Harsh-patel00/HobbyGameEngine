@@ -3,7 +3,7 @@
 //
 
 #include <iostream>
-#include "EcsManager.h"
+#include "GEngine/GameWorld.h"
 
 namespace ECS
 {
@@ -25,9 +25,9 @@ namespace ECS
 		   // so this is the way to get access to entities
 
 		   // This function is called when the system is created
-		   virtual void OnCreate(EcsManager *ecsManager);
+		   virtual void OnCreate(GEngine::GameWorld *world);
 		   // This is a pure virtual function, which runs every frame
-		   virtual void OnUpdate(float dt, EcsManager *ecsManager) = 0;
+		   virtual void OnUpdate(float dt, GEngine::GameWorld *world) = 0;
    };
 
 #endif //GAMEENGINE_SYSTEM_H
