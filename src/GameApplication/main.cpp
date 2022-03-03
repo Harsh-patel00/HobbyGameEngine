@@ -6,6 +6,7 @@
 #include "ECS/Components/Transform.h"
 #include "ECS/Components/Renderer.h"
 #include "ECS/Components/InputCon.h"
+#include "ECS/Components/GameObject.h"
 
 #include "ECS/Systems/RenderSystem.h"
 #include "ECS/Systems/MoveSystem.h"
