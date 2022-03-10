@@ -14,17 +14,17 @@
 class EventManager
 {
 	public:
-		static Action<> TestAction;
-		static Action<> TestAction2;
+		static Action<> QuitGame;
 
 	public:
-		void static NotifyTestActionPerformed(const std::string& name)
+		// Will be notified in input system
+		void static NotifyQuitGame()
 		{
-			TestAction.Invoke(name, "TestAction");
+			QuitGame.Invoke("WindowClosed");
 		}
 };
 
-Action<> EventManager::TestAction{};
-Action<> EventManager::TestAction2{};
+Action<> EventManager::QuitGame{};
+
 
 #endif //GAMEENGINE_EVENTMANAGER_H

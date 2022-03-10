@@ -48,11 +48,9 @@ class Action
 		}
 
 	public:
-		// This function is used to call all the methods that are subscribed/listening to a particular action
-		void Invoke(const Args&... args, const std::string& name, const std::string& actionName)
+		// This function is used to call all the functions that are subscribed/listening to a particular action
+		void Invoke(const Args&... args, const std::string& actionName)
 		{
-			std::cout << "Invoke called from : " << name << "( " << actionName << " )" << "\n";
-
 			if(dictOfAllFunctionsWithHash.empty())
 			{
 				std::cout << actionName << " has no functions to invoke\n";

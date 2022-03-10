@@ -12,17 +12,6 @@
 #ifndef GAMEENGINE_INPUTSYSTEM_H
 #define GAMEENGINE_INPUTSYSTEM_H
 
-void MyFunc()
-{
-	std::cout << "My Func called\n";
-}
-
-void MyFunc2()
-{
-	std::cout << "My Func 2 called\n";
-	EventManager::TestAction2.RemoveListener(MyFunc2);
-}
-
 class InputSystem : ECS::System
 {
 	public:
@@ -30,6 +19,7 @@ class InputSystem : ECS::System
 
 	private:
 		// Function Defs
+		/*
 		void CheckMouse()
 		{
 			int mousePosX = 0;
@@ -150,19 +140,18 @@ class InputSystem : ECS::System
 				}
 			}
 		}
-
+		*/
 	public:
 		void OnCreate(GEngine::GameWorld *world) override
 		{
 			ECS::System::OnCreate(world);
 //			std::cout << "Overridden OnCreate...\n";
-			EventManager::TestAction.AddListener(MyFunc);
 		}
 
 		void OnUpdate(float dt, GEngine::GameWorld *world) override
 		{
-			CheckKeys(world->GetEcsManager());
-			CheckMouse();
+			// CheckKeys(world->GetEcsManager());
+			// CheckMouse();
 		}
 };
 

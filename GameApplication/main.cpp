@@ -14,17 +14,7 @@
 
 #include "EventManager.h"
 
-// Function Prototypes
-void TestFunc()
-{
-	std::cout << "Test action performed\n";
-}
-
-void TestFunc2()
-{
-	std::cout << "Test action 2 performed\n";
-}
-
+bool isGameOver = false;
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
@@ -35,30 +25,28 @@ int main()
 	auto world = engine.GetGameWorld();
 	auto em = world->GetEcsManager();
 
-	EventManager::TestAction.AddListener(TestFunc);
-	EventManager::TestAction2.AddListener(TestFunc2);
+	EventManager::QuitGame.AddListener([]()
+	{
+		isGameOver = true;
+	});
+
+	#pragma region Entities creation and components assignment
 
 	auto circleEnt = em->CreateEntity();
 	em->SetEntityName(circleEnt, "Circle");
-	em->AssignComponent<Renderer>(circleEnt);
-	em->AssignComponent<Transform>(circleEnt);
+	em->AssignComponent<GameObject>(circleEnt);
 	em->AssignComponent<InputControl>(circleEnt);
 
-	em->SetComponentValue<Transform>({{400, 300, 0}}, circleEnt);
-	em->SetComponentValue<Renderer>({Shape::Circle, 100},circleEnt);
-
-	auto squareEnt = em->CreateEntity();
-	em->SetEntityName(squareEnt, "Square");
-	em->AssignComponent<Renderer>(squareEnt);
-	em->AssignComponent<Transform>(squareEnt);
-	em->AssignComponent<InputControl>(squareEnt);
-
-	em->SetComponentValue<Transform>({{100, 200, 0}}, squareEnt);
-	em->SetComponentValue<Renderer>({Shape::Square, 0, {{150, 120, 0}}},squareEnt);
+	em->SetComponentValue<GameObject>({{{},{},{}},
+									   {}}, circleEnt);
 
 	auto inputController = em->CreateEntity();
 	em->SetEntityName(inputController, "UserInput");
 	em->AssignComponent<InputControl>(inputController);
+
+	#pragma endregion
+
+	#pragma region Systems creation and initialization
 
 	// All the systems will be unique pointer as we only want 1 system for a particular task
 	auto rs = std::make_unique<RenderSystem>("Render");
@@ -70,15 +58,14 @@ int main()
 	auto is = std::make_unique<InputSystem>("Input");
 	is->OnCreate(world);
 
+	#pragma endregion
 
 	// Delta time (Locked at 60 fps)
 	// Fixed time step
 	float dt = 1/60.f;
 
-	// Perform a test action before starting render loop
-	EventManager::NotifyTestActionPerformed("Main");
-
-	while (true)
+	// Game Loop
+	while(!isGameOver)
 	{
 		// Input System
 		is->OnUpdate(dt, world);

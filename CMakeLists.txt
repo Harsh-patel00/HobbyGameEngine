@@ -2,24 +2,22 @@ cmake_minimum_required(VERSION 3.21)
 project(GameEngine)
 
 set(CMAKE_CXX_STANDARD 20)
+#set(CMAKE_CXX_FLAGS "-municode")
 
 add_executable(${PROJECT_NAME}
-        src/GameApplication/main.cpp
+        GameApplication/main.cpp
         # ----- ECS Core -----
-        src/GEngine/EcsCore/EntityManager.cpp
-        src/GEngine/EcsCore/ComponentManager.cpp
-        src/GEngine/EcsCore/System.cpp
-        src/GEngine/EcsCore/EcsManager.cpp
+        Engine/src/GEngine/EcsCore/EntityManager.cpp
+        Engine/src/GEngine/EcsCore/ComponentManager.cpp
+        Engine/src/GEngine/EcsCore/System.cpp
+        Engine/src/GEngine/EcsCore/EcsManager.cpp
         # ----- Game Engine -----
-        src/GGraphics/GWindow/Window.cpp
-        src/GEngine/GameWorld.cpp
-        src/GEngine/GameEngine.cpp)
+        Engine/src/GGraphics/GWindow/Window.cpp
+        Engine/src/GEngine/GameWorld.cpp
+        Engine/src/GEngine/GameEngine.cpp)
 
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-        "ExternalDependencies/BGI/include/"
-        "./include/"
-        "./src/GameApplication/")
+        "Engine/include/"
+        "GameApplication/")
 
-target_link_directories(${PROJECT_NAME} PRIVATE "ExternalDependencies/BGI/lib/")
-target_link_libraries(${PROJECT_NAME} libbgi.a)
