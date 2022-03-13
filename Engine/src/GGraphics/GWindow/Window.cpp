@@ -107,7 +107,7 @@ void GGraphics::Window::OnUpdate()
 	for (int i = 0; i < 255; ++i)
 	{
 		DrawPixel(i, i*2, {static_cast<uint32_t>(i),
-							                static_cast<uint32_t>(i++),
+							                static_cast<uint32_t>(i+1),
 							                static_cast<uint32_t>(i+3)});
 	}
 }
