@@ -14,7 +14,8 @@ add_executable(${PROJECT_NAME}
         # ----- Game Engine -----
         Engine/src/GGraphics/GWindow/Window.cpp
         Engine/src/GEngine/GameWorld.cpp
-        Engine/src/GEngine/GameEngine.cpp)
+        Engine/src/GEngine/GameEngine.cpp
+        Engine/src/GGraphics/Mesh.cpp)
 
 
 target_include_directories(${PROJECT_NAME} PUBLIC

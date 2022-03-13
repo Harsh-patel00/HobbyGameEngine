@@ -10,6 +10,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 GGraphics::Window::Window(int windowWidth, int windowHeight, const wchar_t *windowTitle)
 {
+
+	_windowWidth = windowWidth;
+	_windowHeight = windowHeight;
+
 	_windowClassName = L"GameWindow";
 	_windowName = windowTitle;
 
@@ -29,11 +33,16 @@ GGraphics::Window::Window(int windowWidth, int windowHeight, const wchar_t *wind
 									_windowClassName,
 									_windowName,
 									WS_OVERLAPPEDWINDOW,
-									CW_USEDEFAULT,CW_USEDEFAULT, windowWidth, windowHeight,
+									0,0, // Starting position of window (w.r.t screen coords)
+									rect.right - rect.left, rect.bottom - rect.top,
 									nullptr, nullptr, nullptr, nullptr
 									);
 
 	assert(_windowHandle);
+
+	AllocateMemory();
+	AllocateBitMapInfo();
+	_hdc = GetDC(_windowHandle);
 
 	ShowWindow(_windowHandle, SW_SHOW);
 	UpdateWindow(_windowHandle);
@@ -55,6 +64,74 @@ void GGraphics::Window::Broadcast()
 		TranslateMessage(&msg);
 		DispatchMessageW(&msg);
 	}
+
+	OnUpdate();
+}
+
+void GGraphics::Window::DrawPixel(int x, int y, GColor newColor)
+{
+	ColorPixel(x, y, newColor);
+
+	StretchDIBits(_hdc,
+				  0, // This means whole client area
+				  0, // This means whole client area
+				  _windowWidth,
+				  _windowHeight,
+				  0,
+				  0,
+				  _windowWidth,
+				  _windowHeight,
+				  _windowMemory,
+				  &_bitmapInfo,
+				  DIB_RGB_COLORS,
+				  SRCCOPY
+	);
+}
+
+void GGraphics::Window::PrintWindowDims()
+{
+	RECT rect{};
+	GetClientRect(_windowHandle, &rect);
+
+	std::cout << "Window dims mentioned : (" << _windowWidth << ", " << _windowHeight << ")\n";
+	std::cout << "Window dims : (" << rect.right - rect.left << ", " << rect.bottom - rect.top << ")\n";
+}
+
+void GGraphics::Window::AllocateMemory()
+{
+	_windowMemory = VirtualAlloc(
+			nullptr,
+			// Because we want size of memory as big as screen size
+			// as we are storing all pixels (each of size 4 bytes)
+			_windowWidth * _windowHeight * sizeof (uint32_t),
+			MEM_RESERVE | MEM_COMMIT,
+			PAGE_READWRITE);
+}
+
+void GGraphics::Window::AllocateBitMapInfo()
+{
+	_bitmapInfo.bmiHeader.biSize = sizeof(_bitmapInfo.bmiHeader);
+	_bitmapInfo.bmiHeader.biWidth = _windowWidth;
+	_bitmapInfo.bmiHeader.biHeight = _windowHeight;
+	_bitmapInfo.bmiHeader.biPlanes = 1;
+	_bitmapInfo.bmiHeader.biBitCount = 32;
+	_bitmapInfo.bmiHeader.biCompression = BI_RGB;
+}
+
+void GGraphics::Window::OnUpdate()
+{
+	DrawPixel(400, 300, {255, 0, 255});
+}
+
+void GGraphics::Window::ColorPixel(int x, int y, GGraphics::GColor newColor)
+{
+	auto *pixel = (uint32_t *)_windowMemory;
+
+	uint32_t color = (newColor.r << 16) ^ (newColor.g << 8) ^ newColor.b;
+
+	pixel += y * _windowWidth + x;
+
+	*pixel = color;
 }
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

@@ -24,12 +24,15 @@ class RenderSystem : ECS::System
 		{
 			// Create a unique window here
 			// This makes sense, as we create a render system, we should have something to render on
-			window = std::make_unique<GGraphics::Window>(800, 600, L"My Unique Window");
+			window = std::make_unique<GGraphics::Window>(800, 600, L"Game Engine");
 
 			// This will listen to the WindowClosed action from the window class.
 			// I have created this to notify the game, that window is closed,
 			// because window is not in user's control.
 			GGraphics::Window::WindowClosed.AddListener(EventManager::NotifyQuitGame);
+
+			window->PrintWindowDims();
+
 		}
 
 	public:
