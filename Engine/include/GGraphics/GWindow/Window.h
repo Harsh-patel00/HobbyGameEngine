@@ -61,7 +61,9 @@ namespace GGraphics
 			// This will put pixel on the screen
 			void DrawPixel(int x, int y, GColor color);
 			void ColorPixel(int x, int y, GColor color);
-			// This assigns a memory of size _windowWidth*_windowHeight and stores in _windowMwmory
+			void SetBkColor(GColor color);
+
+			// This assigns a memory of size _windowWidth*_windowHeight and stores in _windowMemory
 			void AllocateMemory();
 			void AllocateBitMapInfo();
 			void OnUpdate();

@@ -26,13 +26,13 @@ GGraphics::Window::Window(int windowWidth, int windowHeight, const wchar_t *wind
 	assert(RegisterClassExW(&wc));
 
 	RECT rect = {0, 0, windowWidth, windowHeight};
-	AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
+	AdjustWindowRect(&rect, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, false);
 
 
 	_windowHandle = CreateWindowExW(0,
 									_windowClassName,
 									_windowName,
-									WS_OVERLAPPEDWINDOW,
+									WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
 									0,0, // Starting position of window (w.r.t screen coords)
 									rect.right - rect.left, rect.bottom - rect.top,
 									nullptr, nullptr, nullptr, nullptr
@@ -46,6 +46,10 @@ GGraphics::Window::Window(int windowWidth, int windowHeight, const wchar_t *wind
 
 	ShowWindow(_windowHandle, SW_SHOW);
 	UpdateWindow(_windowHandle);
+
+	// TODO: Move this function to proper location (probably OnCreate())
+	// Set background color once
+	SetBkColor({40, 40, 40});
 }
 
 GGraphics::Window::~Window()
@@ -66,26 +70,6 @@ void GGraphics::Window::Broadcast()
 	}
 
 	OnUpdate();
-}
-
-void GGraphics::Window::DrawPixel(int x, int y, GColor newColor)
-{
-	ColorPixel(x, y, newColor);
-
-	StretchDIBits(_hdc,
-				  0, // This means whole client area
-				  0, // This means whole client area
-				  _windowWidth,
-				  _windowHeight,
-				  0,
-				  0,
-				  _windowWidth,
-				  _windowHeight,
-				  _windowMemory,
-				  &_bitmapInfo,
-				  DIB_RGB_COLORS,
-				  SRCCOPY
-	);
 }
 
 void GGraphics::Window::PrintWindowDims()
@@ -120,7 +104,32 @@ void GGraphics::Window::AllocateBitMapInfo()
 
 void GGraphics::Window::OnUpdate()
 {
-	DrawPixel(400, 300, {255, 0, 255});
+	for (int i = 0; i < 255; ++i)
+	{
+		DrawPixel(i, i*2, {static_cast<uint32_t>(i),
+							                static_cast<uint32_t>(i++),
+							                static_cast<uint32_t>(i+3)});
+	}
+}
+
+void GGraphics::Window::DrawPixel(int x, int y, GColor newColor)
+{
+	ColorPixel(x, y, newColor);
+
+	StretchDIBits(_hdc,
+	              0, // This means whole client area
+	              0, // This means whole client area
+	              _windowWidth,
+	              _windowHeight,
+	              0,
+	              0,
+	              _windowWidth,
+	              _windowHeight,
+	              _windowMemory,
+	              &_bitmapInfo,
+	              DIB_RGB_COLORS,
+	              SRCCOPY
+	             );
 }
 
 void GGraphics::Window::ColorPixel(int x, int y, GGraphics::GColor newColor)
@@ -129,9 +138,27 @@ void GGraphics::Window::ColorPixel(int x, int y, GGraphics::GColor newColor)
 
 	uint32_t color = (newColor.r << 16) ^ (newColor.g << 8) ^ newColor.b;
 
-	pixel += y * _windowWidth + x;
+	if(x == _windowWidth)
+		x--;
+
+	if(y == _windowHeight)
+		y--;
+
+	pixel += y * _windowWidth + x; // Travel up by y, window width times + move forward by x
 
 	*pixel = color;
+}
+
+void GGraphics::Window::SetBkColor(GGraphics::GColor bkColor)
+{
+	auto *pixel = (uint32_t *)_windowMemory;
+
+	uint32_t color = (bkColor.r << 16) ^ (bkColor.g << 8) ^ bkColor.b;
+
+	for (int i = 0; i < _windowWidth * _windowHeight; ++i)
+	{
+		*pixel++ = color;
+	}
 }
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -146,14 +173,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case WM_PAINT:
 		{
-			PAINTSTRUCT ps;
-			HDC hdc = BeginPaint(hwnd, &ps);
-
-			// All painting occurs here, between BeginPaint and EndPaint.
-
-			FillRect(hdc, &ps.rcPaint, (HBRUSH) (COLOR_WINDOW));
-
-			EndPaint(hwnd, &ps);
+//			PAINTSTRUCT ps;
+//			HDC hdc = BeginPaint(hwnd, &ps);
+//
+//			// All painting occurs here, between BeginPaint and EndPaint.
+//
+//			FillRect(hdc, &ps.rcPaint, (HBRUSH) (COLOR_WINDOW));
+//
+//			EndPaint(hwnd, &ps);
 
 			break;
 		}
