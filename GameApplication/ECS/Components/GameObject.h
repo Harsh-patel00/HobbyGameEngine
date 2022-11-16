@@ -5,6 +5,8 @@
 #ifndef GAMEENGINE_GAMEOBJECT_H
 #define GAMEENGINE_GAMEOBJECT_H
 
+#include "Transform.h"
+
 struct GameObject
 {
 	// TODO: Implement this component

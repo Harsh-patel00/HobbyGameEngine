@@ -2,8 +2,8 @@
 
 // User-defined header files
 #include "GEngine/GameEngine.h"
+#include "GEngine/GWindow/EngineWindow.h"
 
-#include "ECS/Components/Transform.h"
 #include "ECS/Components/Renderer.h"
 #include "ECS/Components/InputCon.h"
 #include "ECS/Components/GameObject.h"
@@ -24,11 +24,9 @@ int main()
 
 	auto world = engine.GetGameWorld();
 	auto em = world->GetEcsManager();
+	 auto window = engine.GetEngineWindow();
 
-	EventManager::QuitGame.AddListener([]()
-	{
-		isGameOver = true;
-	});
+	GEngine::EngineWindow::WindowClosed.AddListener([](){ isGameOver = true; });
 
 	#pragma region Entities creation and components assignment
 
@@ -75,7 +73,7 @@ int main()
 
 		// Render System
 		// Always call at last so that every thing is rendered
-		rs->OnUpdate(dt, world);
+		rs->OnUpdate(dt, world, window);
 	}
 }
 #pragma clang diagnostic pop

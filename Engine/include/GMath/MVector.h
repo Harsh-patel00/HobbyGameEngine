@@ -5,18 +5,16 @@
 #include <memory>
 #include <cmath>
 #include <iostream>
+#include "MPoint.h"
 
 namespace GMath
 {
-#ifndef PHYSICSENGINE_PVECTOR_H
-#define PHYSICSENGINE_PVECTOR_H
+#ifndef GAMEENGINE_MVECTOR_H
+#define GAMEENGINE_MVECTOR_H
 
    template<typename T>
-   struct MVector
+   struct MVector : public MPoint<T>
    {
-		   // Member Variables
-		   T x{}, y{}, z{};
-
 	   private:
 		   float _length{};
 		   // We'll not declare direction variable as vector itself shows the direction
@@ -25,8 +23,12 @@ namespace GMath
 		   // Constructors
 		   MVector() = default;
 
-		   MVector(T x, T y, T z) : x(x), y(y), z(z)
+		   MVector(T x, T y, T z)
 		   {
+			   this->x = x;
+			   this->y = y;
+			   this->z = z;
+
 			   SetLength();
 		   }
 
@@ -77,7 +79,7 @@ namespace GMath
 	   private:
 		   void SetLength()
 		   {
-			   _length = sqrt(x * x + y * y + z * z);
+			   _length = sqrt(this->x * this->x + this->y * this->y + this->z * this->z);
 		   }
 
 	   public:
@@ -129,5 +131,5 @@ namespace GMath
    using Vec3f = MVector<float>;
    using Vec3d = MVector<double>;
 
-#endif //PHYSICSENGINE_PVECTOR_H
+#endif //GAMEENGINE_MVECTOR_H
 }
