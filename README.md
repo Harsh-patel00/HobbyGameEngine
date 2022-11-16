@@ -1,5 +1,5 @@
 # HobbyGameEngine
-This is a game engine in created in cpp using native windows library and using a custom software renderer.
+This is a game engine created in cpp using native windows library and using a custom software renderer.
 
 ## GameEngine Features: 
 
