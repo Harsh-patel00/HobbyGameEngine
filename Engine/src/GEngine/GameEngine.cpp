@@ -11,7 +11,7 @@ GEngine::GameWorld *GEngine::GameEngine::GetGameWorld()
 
 void GEngine::GameEngine::Init()
 {
-	std::cout << "Initializing Game Engine...Thread ID :: " << std::this_thread::get_id() << "\n";
+	std::cout << "Initializing Game Engine...\n";
 	_world = std::make_unique<GameWorld>();
 
 	CreateWindowOnSeparateThread();
@@ -20,11 +20,15 @@ void GEngine::GameEngine::Init()
 void GEngine::GameEngine::CreateWindowOnSeparateThread()
 {
 	_windowThread = std::thread([this](){
+
 		std::cout << "\nCreating a window...\n";
+
+		_windowMutex.lock();
 		_window = std::make_unique<EngineWindow>(500, 600, L"Gagged Engine");
+		_windowMutex.unlock();
 	});
 
-	std::cout << "Window running on thread :: " << _windowThread.get_id() << "\n";
+	std::cout << "Creating & running window on thread :: " << _windowThread.get_id() << "\n";
 
 	_windowThread.detach();
 }

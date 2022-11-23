@@ -17,20 +17,18 @@
 #ifndef GAMEENGINE_ENGINEWINDOW_H
 #define GAMEENGINE_ENGINEWINDOW_H
 
-//#include <ggraphics.h> // TODO: Write this header file
 #include <thread>
+#include <condition_variable>
 
 #include "BaseWindow.h"
-#include "GEngine/Action.h"
+#include "GGraphics/GColor.h"
+#include "../../GameApplication/EventManager.h"
 
 namespace GEngine
 {
    class EngineWindow : public BaseWindow<EngineWindow>
    {
-	   private:
-		   // Run the update loop on a separate thread, so that rendering does not block the main thread.
-		   std::thread _windowUpdateThread;
-
+	   public:
 		   int _windowWidth{}, _windowHeight{};
 		   bool _isDefaultBufferActive = true;
 		   void *_frameBuffer01{}; // Framebuffer stores pixel addresses
@@ -41,7 +39,8 @@ namespace GEngine
 		   bool _isWindowClosed = false;
 
 	   public:
-		   static Action<> WindowClosed;
+//		   static Action<> WindowClosed;
+//		   Action<> WindowUpdate{};
 
 	   public:
 		   EngineWindow() = default;
@@ -52,10 +51,15 @@ namespace GEngine
 		   PCWSTR  ClassName() const override { return L"Engine Window Class"; }
 		   LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
+		   // This will put pixel on the screen, with custom color
+		   void DrawPixel(int x, int y, GGraphics::GColor color);
+		   // This will put pixel on the screen, with white as default color
+		   void DrawPixel(int x, int y);
+
+
 	   private:
 		   void Show();
 		   void StartMessageLoop();
-		   void UpdateOnSeparateThread();
 
 		   void InitBuffers();
 		   // This assigns a memory of size _windowWidth*_windowHeight and stores in buffer
@@ -66,6 +70,8 @@ namespace GEngine
 		   void AllocateBitMapInfo();
 		   void SwapBuffers();
 		   void OnUpdate();
+		   void ColorPixel(int x, int y, GGraphics::GColor color);
+		   void SetBkColor(GGraphics::GColor color);
    };
 }
 #endif //GAMEENGINE_ENGINEWINDOW_H

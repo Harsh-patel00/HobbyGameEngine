@@ -19,6 +19,8 @@ namespace GEngine
 		private:
 			// Run the window on a separate thread, so that inputs does not block the main thread.
 			std::thread _windowThread;
+			std::mutex _windowMutex;
+
 			// Maintaining a unique copy of the game world in memory
 			// It's a unique pointer because we don't want another world (As of now)
 			std::unique_ptr<GameWorld> _world;
@@ -31,7 +33,7 @@ namespace GEngine
 		public:
 			// Helper function to get reference to GameWorld
 			GameWorld* GetGameWorld();
-			EngineWindow* GetEngineWindow();
+			GEngine::EngineWindow *GetEngineWindow();
 
 		private:
 			void Init();

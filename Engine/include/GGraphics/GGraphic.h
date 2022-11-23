@@ -14,17 +14,17 @@ namespace GGraphics
    class GGraphic
    {
 	   private:
-		   GColor _brushColor;
+		   GColor _brushColor{};
+		   GEngine::EngineWindow *pDrawWindow;
+		   GGraphics::GShapes shapeClass;
 
 	   public:
-		   void SetBrushColor(GColor brushColor)
-		   {
-				_brushColor = brushColor;
-		   }
-		   void Draw(GShapes shape, const GEngine::EngineWindow& window)
-		   {
+		   void SetBrushColor(GColor brushColor);
+		   void Draw(GGraphics::GShapes shapeClass, GEngine::EngineWindow *window);
 
-		   }
+	   private:
+			void DrawCircle();
+			void DrawLine();
    };
 
 }

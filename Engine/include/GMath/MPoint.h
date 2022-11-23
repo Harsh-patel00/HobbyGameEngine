@@ -19,11 +19,11 @@ namespace GMath
 		   // Constructors
 		   MPoint() = default;
 
-#if numPoints == 3
+//#if numPoints == 3
 		   MPoint(T x, T y, T z) : x(x), y(y), z(z) {}
-#else
-		   MPoint(T x, T y) : x(x), y(y){}
-#endif
+//#else
+//		   MPoint(T x, T y) : x(x), y(y){}
+//#endif
    };
 
 	using Point3i = MPoint<int>;

@@ -22,19 +22,22 @@ class RenderSystem : ECS::System
 			ECS::System::OnCreate(world);
 			// std::cout << "Overridden OnCreate...\n";
 		}
-		void OnUpdate(float dt, GEngine::GameWorld *world) override
+
+		void OnUpdate(float dt, GEngine::GameWorld *world) override { }
+
+		void OnUpdate(float dt, GEngine::GameWorld *world, GEngine::EngineWindow *window)
 		{
 			// Looping through all entities with GameObject component
 			for (auto entId : world->GetEcsManager()->EntitiesWithComponents<GameObject>())
 			{
 				auto go = world->GetEcsManager()->GetComponent<GameObject>(entId);
+
+				GGraphics::GShapes shapeClass{};
+				shapeClass.SetLine(go->transform.position, {10, 10, 0});
+
+				go->renderer.graphic.SetBrushColor(GGraphics::GColor(GGraphics::Color::YELLOW));
+				go->renderer.graphic.Draw(shapeClass, window);
 			}
-
-		}
-
-		void OnUpdate(float dt, GEngine::GameWorld *world, GEngine::EngineWindow *window)
-		{
-			OnUpdate(dt, world);
 		}
 };
 

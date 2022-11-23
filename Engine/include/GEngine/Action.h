@@ -4,18 +4,19 @@
 
 #include <map>
 #include <iostream>
+#include <functional>
 
 #ifndef GAMEENGINE_ACTION_H
 #define GAMEENGINE_ACTION_H
 
-template<typename... Args>
+template<class... Args>
 class Action
 {
 	private:
-		using FuncType = void (*)(Args...);
+		using FuncType = std::function<void(Args...)>;
 	public:
 		// This maps every function with its hash (This way function is easier to find)
-		std::map<std::size_t, FuncType> dictOfAllFunctionsWithHash;
+		std::map<std::size_t, FuncType> dictOfAllFunctionsWithHash{};
 
 	public:
 		// Whenever a new action is created, ActionID is incremented
@@ -24,9 +25,9 @@ class Action
 
 	private:
 		// Create a function's hash
-		std::size_t GetFunctionHash(void (*func)(Args...))
+		std::size_t GetFunctionHash(FuncType *func)
 		{
-			std::hash<void (*)(Args...)> funcHash;
+			std::hash<FuncType*> funcHash;
 
 			return funcHash(func);
 		}
@@ -76,15 +77,15 @@ class Action
 		}
 
 		// Add a function as a listener to an Action
-		void AddListener(void (*func)(Args...))
+		void AddListener(FuncType func)
 		{
 			// Checking if the function is already a listener
-			auto it = dictOfAllFunctionsWithHash.find(GetFunctionHash(func));
+			auto it = dictOfAllFunctionsWithHash.find(GetFunctionHash(&func));
 
 			// If not, get the hash and add it to the map
 			if(it == dictOfAllFunctionsWithHash.end())
 			{
-				dictOfAllFunctionsWithHash.insert(std::pair<std::size_t, FuncType>(GetFunctionHash(func), func));
+				dictOfAllFunctionsWithHash.insert(std::pair<std::size_t, FuncType>(GetFunctionHash(&func), func));
 			}
 			else
 			{
@@ -94,7 +95,7 @@ class Action
 		}
 
 		// Remove the function as a listener of an Action
-		void RemoveListener(void (*func)(Args...))
+		void RemoveListener(FuncType func)
 		{
 			// Find the function in the map
 			auto it = dictOfAllFunctionsWithHash.find(GetFunctionHash(func));
@@ -111,6 +112,11 @@ class Action
 			{
 				std::cout << "Can't remove function which does not belong to this action.\n";
 			}
+		}
+
+		bool IsEmpty()
+		{
+			return dictOfAllFunctionsWithHash.empty();
 		}
 };
 
