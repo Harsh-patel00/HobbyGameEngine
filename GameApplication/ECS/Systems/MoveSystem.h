@@ -4,7 +4,7 @@
 
 #include "GEngine/EcsCore/System.h"
 #include "ECS/Components/Transform.h"
-#include "ECS/Components/Renderer.h"
+#include "ECS/Components/MeshRenderer.h"
 #include "ECS/Components/InputCon.h"
 
 #include "EventManager.h"
@@ -29,7 +29,7 @@ class MoveSystem : ECS::System
 
 		void OnUpdate(float dt, GEngine::GameWorld *world) override
 		{
-			for (auto ent : world->GetEcsManager()->EntitiesWithComponents<Transform, Renderer, InputControl>())
+			for (auto ent : world->GetEcsManager()->EntitiesWithComponents<Transform, MeshRenderer, InputControl>())
 			{
 				auto tc = world->GetEcsManager()->GetComponent<Transform>(ent);
 				auto ic = world->GetEcsManager()->GetComponent<InputControl>(ent);

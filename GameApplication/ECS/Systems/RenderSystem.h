@@ -7,7 +7,7 @@
 
 #include "GEngine/EcsCore/System.h"
 #include "ECS/Components/GameObject.h"
-#include "GMath/MVector.h"
+#include "GMath/Vector.h"
 #include "EventManager.h"
 
 class RenderSystem : ECS::System
@@ -27,16 +27,15 @@ class RenderSystem : ECS::System
 
 		void OnUpdate(float dt, GEngine::GameWorld *world, GEngine::EngineWindow *window)
 		{
+			GGraphics::Primitives2d::Line line{{0, 0, 0}, {100, 100, 0}, window, GGraphics::Color(GGraphics::ColorEnum::CYAN)};
+
+			line.Draw();
+
 			// Looping through all entities with GameObject component
-			for (auto entId : world->GetEcsManager()->EntitiesWithComponents<GameObject>())
+			for (auto entId : world->GetEcsManager()->EntitiesWithComponents<GameObject, MeshRenderer>())
 			{
 				auto go = world->GetEcsManager()->GetComponent<GameObject>(entId);
-
-				GGraphics::GShapes shapeClass{};
-				shapeClass.SetLine(go->transform.position, {10, 10, 0});
-
-				go->renderer.graphic.SetBrushColor(GGraphics::GColor(GGraphics::Color::YELLOW));
-				go->renderer.graphic.Draw(shapeClass, window);
+				auto renderer = world->GetEcsManager()->GetComponent<MeshRenderer>(entId);
 			}
 		}
 };

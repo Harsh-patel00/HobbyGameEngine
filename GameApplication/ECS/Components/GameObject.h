@@ -9,10 +9,7 @@
 
 struct GameObject
 {
-	// TODO: Implement this component
-
 	Transform transform{};      // Position, Rotation, and Scale
-	Renderer renderer{};        // Mesh
 };
 
 #endif //GAMEENGINE_GAMEOBJECT_H

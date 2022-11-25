@@ -5,7 +5,7 @@
 #include <memory>
 #include <cmath>
 #include <iostream>
-#include "MPoint.h"
+#include "Point.h"
 
 namespace GMath
 {
@@ -13,7 +13,7 @@ namespace GMath
 #define GAMEENGINE_MVECTOR_H
 
    template<typename T>
-   struct MVector : public MPoint<T>
+   struct Vector : public Point<T>
    {
 	   private:
 		   float _length{};
@@ -21,9 +21,9 @@ namespace GMath
 
 	   public:
 		   // Constructors
-		   MVector() = default;
+		   Vector() = default;
 
-		   MVector(T x, T y, T z)
+		   Vector(T x, T y, T z)
 		   {
 			   this->x = x;
 			   this->y = y;
@@ -33,35 +33,35 @@ namespace GMath
 		   }
 
 		   // Member Functions
-		   float Dot(const MVector &b)
+		   float Dot(const Vector &b)
 		   {
 			   // a · b = ax * bx + ay * by + az * bz
 			   return this->x * b.x + this->y * b.y + this->z * b.z;
 		   }
 
-		   MVector Cross(const MVector &b)
+		   Vector Cross(const Vector &b)
 		   {
 			   // axb = (cx, cy, cz)
 			   // cx = aybz − azby
 			   // cy = azbx − axbz
 			   // cz = axby − aybx
 
-			   return MVector<T>((this->y * b.z - this->z * b.y), (this->z * b.x - this->x * b.z),
-			                     (this->x * b.y - this->y * b.x));
+			   return Vector<T>((this->y * b.z - this->z * b.y), (this->z * b.x - this->x * b.z),
+			                    (this->x * b.y - this->y * b.x));
 		   }
 
-		   float AngleWith(const MVector &b)
+		   float AngleWith(const Vector &b)
 		   {
 			   // (theta) = cos^-1((a.b)/(|a|*|b|))
 			   // 1 degree = 180/PI rads
 			   return (acos(this->Dot(b) / (this->_length * b._length)) * 180) / 3.14;
 		   }
 
-		   MVector Normalize()
+		   Vector Normalize()
 		   {
 			   // a(hat) = a / |a|
 
-			   MVector unitVec(this->x / _length, this->y / _length, this->z / _length);
+			   Vector unitVec(this->x / _length, this->y / _length, this->z / _length);
 
 			   this->x = unitVec.x;
 			   this->y = unitVec.y;
@@ -84,52 +84,58 @@ namespace GMath
 
 	   public:
 		   // Overloaded Operators
-		   friend std::ostream &operator<<(std::ostream &os, const MVector &v)
+		   friend std::ostream &operator<<(std::ostream &os, const Vector &v)
 		   {
 			   os << "Vec(" << v.x << ", " << v.y << ", " << v.z << ")";
 			   return os;
 		   }
 
-		   friend std::ostream &operator<<(std::ostream &os, const std::unique_ptr<MVector> v)
+		   friend std::ostream &operator<<(std::ostream &os, const std::unique_ptr<Vector> v)
 		   {
 			   os << "Vec(" << v->x << ", " << v->y << ", " << v.z << ")";
 			   return os;
 		   }
 
-		   MVector operator+(const MVector &b)
+		   Vector operator+(const Vector &b)
 		   {
-			   return MVector(this->x + b.x, this->y + b.y, this->z + b.z);
+			   return Vector(this->x + b.x, this->y + b.y, this->z + b.z);
 		   }
 
-		   MVector operator+(const T &s)
+		   Vector operator+(const T &s)
 		   {
-			   return MVector(this->x + s, this->y + s, this->z + s);
+			   return Vector(this->x + s, this->y + s, this->z + s);
 		   }
 
-		   MVector operator-()
+		   Vector operator-()
 		   {
-			   return MVector(-this->x, -this->y, -this->z);
+			   return Vector(-this->x, -this->y, -this->z);
 		   }
 
-		   MVector operator-(const MVector &b)
+		   Vector operator-(const Vector &b)
 		   {
-			   return MVector(this->x - b.x, this->y - b.y, this->z - b.z);
+			   return Vector(this->x - b.x, this->y - b.y, this->z - b.z);
 		   }
 
-		   MVector operator*(const int &s)
+		   Vector operator*(const int &s)
 		   {
-			   return MVector(this->x * s, this->y * s, this->z * s);
+			   return Vector(this->x * s, this->y * s, this->z * s);
 		   }
 
-		   friend MVector operator*(const int &s, const MVector &v)
+		   friend Vector operator*(const int &s, const Vector &v)
 		   {
-			   return MVector(v.x * s, v.y * s, v.z * s);
+			   return Vector(v.x * s, v.y * s, v.z * s);
 		   }
+
+//		   friend std::ostream& operator<<(std::ostream &os, const Vector &v)
+//		   {
+//				os << "Vector :: { " << v.x << ", " << v.y << ", " << v.z << " }\n";
+//				return os;
+//		   }
    };
 
-   using Vec3i = MVector<int>;
-   using Vec3f = MVector<float>;
-   using Vec3d = MVector<double>;
+   using Vec3i = Vector<int>;
+   using Vec3f = Vector<float>;
+   using Vec3d = Vector<double>;
 
 #endif //GAMEENGINE_MVECTOR_H
 }

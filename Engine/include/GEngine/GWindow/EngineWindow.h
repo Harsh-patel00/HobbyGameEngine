@@ -21,14 +21,14 @@
 #include <condition_variable>
 
 #include "BaseWindow.h"
-#include "GGraphics/GColor.h"
+#include "GGraphics/Color.h"
 #include "../../GameApplication/EventManager.h"
 
 namespace GEngine
 {
    class EngineWindow : public BaseWindow<EngineWindow>
    {
-	   public:
+	   private:
 		   int _windowWidth{}, _windowHeight{};
 		   bool _isDefaultBufferActive = true;
 		   void *_frameBuffer01{}; // Framebuffer stores pixel addresses
@@ -39,8 +39,8 @@ namespace GEngine
 		   bool _isWindowClosed = false;
 
 	   public:
-//		   static Action<> WindowClosed;
-//		   Action<> WindowUpdate{};
+		   int GetWidth();
+		   int GetHeight();
 
 	   public:
 		   EngineWindow() = default;
@@ -51,11 +51,8 @@ namespace GEngine
 		   PCWSTR  ClassName() const override { return L"Engine Window Class"; }
 		   LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
-		   // This will put pixel on the screen, with custom color
-		   void DrawPixel(int x, int y, GGraphics::GColor color);
-		   // This will put pixel on the screen, with white as default color
-		   void DrawPixel(int x, int y);
-
+		   // This will put pixel on the screen, with custom color or white as default color
+		   void DrawPixel(int x, int y, GGraphics::Color = GGraphics::Color(GGraphics::ColorEnum::WHITE));
 
 	   private:
 		   void Show();
@@ -70,8 +67,10 @@ namespace GEngine
 		   void AllocateBitMapInfo();
 		   void SwapBuffers();
 		   void OnUpdate();
-		   void ColorPixel(int x, int y, GGraphics::GColor color);
-		   void SetBkColor(GGraphics::GColor color);
+		   void ColorPixel(int x, int y, GGraphics::Color color);
+		   void ClearBg(GGraphics::Color = GGraphics::Color(GGraphics::ColorEnum::BLACK));
+
+		   void HandleWindowResize(int newWidth, int newHeight);
    };
 }
 #endif //GAMEENGINE_ENGINEWINDOW_H

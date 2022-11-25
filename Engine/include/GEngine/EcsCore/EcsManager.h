@@ -182,6 +182,14 @@ namespace ECS
 		   {
 			   return EntitiesIterator<Args...>(*entityManager);
 		   }
+
+		   // Assign and Set component values to default
+		   template <typename T>
+		   void AssignComponentAndSetDefaultValues(EntityID id)
+		   {
+			   entityManager->template AssignComponent<T>(id, *componentManager);
+			   entityManager->template SetComponentValue<T>({}, id, *componentManager);
+		   }
    };
 
 

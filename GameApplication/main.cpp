@@ -4,7 +4,7 @@
 #include "GEngine/GameEngine.h"
 #include "GEngine/GWindow/EngineWindow.h"
 
-#include "ECS/Components/Renderer.h"
+#include "ECS/Components/MeshRenderer.h"
 #include "ECS/Components/InputCon.h"
 #include "ECS/Components/GameObject.h"
 
@@ -30,11 +30,9 @@ class Initiate
 		GEngine::EngineWindow *window{};
 
 	public: // Entities
-		ECS::EntityID circleEnt{};
-		ECS::EntityID inputController{};
+		ECS::EntityID lineEnt{};
 
 	public: // Systems
-		std::unique_ptr<InputSystem> is{};
 		std::unique_ptr<MoveSystem> ms{};
 		std::unique_ptr<RenderSystem> rs{};
 
@@ -58,35 +56,21 @@ class Initiate
 			CreateAndSetupSystems();
 
 			SetListener();
-
-
-//			StartGameLoop();
 		}
-
 
 		void CreateAndSetupEntities()
 		{
 			std::cout << "Creating and Setting up entities...\n";
-			circleEnt = em->CreateEntity();
-			em->SetEntityName(circleEnt, "Circle");
-			em->AssignComponent<GameObject>(circleEnt);
-			em->AssignComponent<InputControl>(circleEnt);
-
-			em->SetComponentValue<GameObject>({{{},{},{}},
-			                                   {}}, circleEnt);
-
-			inputController = em->CreateEntity();
-			em->SetEntityName(inputController, "UserInput");
-			em->AssignComponent<InputControl>(inputController);
+			lineEnt = em->CreateEntity();
+			em->SetEntityName(lineEnt, "Line");
+			em->AssignComponentAndSetDefaultValues<GameObject>(lineEnt);
+			em->AssignComponentAndSetDefaultValues<MeshRenderer>(lineEnt);
 
 			std::cout << "Creating and Setting up entities done.\n";
 		}
 
 		void CreateAndSetupSystems()
 		{
-			is = std::make_unique<InputSystem>("Input");
-			is->OnCreate(world);
-
 			ms = std::make_unique<MoveSystem>("Move");
 			ms->OnCreate(world);
 
@@ -107,54 +91,21 @@ class Initiate
 
 		void UpdateSystems(void* windowRef)
 		{
-			std::cout << "Update systems called\n";
-
-			is->OnUpdate(dt, world);
 			ms->OnUpdate(dt, world);
 
-			GEngine::EngineWindow *pWindow = reinterpret_cast<GEngine::EngineWindow*>(windowRef);
+			auto *pWindow = reinterpret_cast<GEngine::EngineWindow*>(windowRef);
 
 			// Render System
 			// Always call at last so that every thing is rendered
 			rs->OnUpdate(dt, world, pWindow);
 		}
-
-		void StartGameLoop()
-		{
-			using namespace std::literals::chrono_literals;
-			while(!isGameOver)
-			{
-				std::cout << "Inside main game loop!\n";
-				std::this_thread::sleep_for(1s);
-			}
-		}
 };
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "EndlessLoop"
 int main()
 {
 	std::cout << "Main Thread ID :: " << std::this_thread::get_id() << "\n";
 
 	Initiate initiate{};
-
-//	std::mutex worker1Mutex;
-//
-//	std::thread worker1([&](){
-//
-//		worker1Mutex.lock();
-//
-//		std::cout << "Worker 1 ID :: " << std::this_thread::get_id() << "\n";
-//
-//
-//
-//		worker1Mutex.unlock();
-//	});
-
-//	if(worker1.joinable())
-//		worker1.join();
-
-//	worker1.detach();
 
 	std::unique_lock<std::mutex> lk(cv_m);
 	std::cerr << "Waiting on main thread... \n";
@@ -162,4 +113,3 @@ int main()
 	std::cerr << "Main Exited!\n";
 
 }
-#pragma clang diagnostic pop

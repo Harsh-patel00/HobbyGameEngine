@@ -3,14 +3,10 @@
 //
 
 #include <iostream>
-
 #include "GEngine/GWindow/EngineWindow.h"
 
-//Action<> GEngine::EngineWindow::WindowClosed{};
-//Action<> GEngine::EngineWindow::WindowUpdate{};
 Action<> EventManager::QuitGame{};
 Action<void*> EventManager::WindowUpdate{};
-
 
 GEngine::LRESULT GEngine::EngineWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -31,6 +27,9 @@ GEngine::LRESULT GEngine::EngineWindow::HandleMessage(UINT uMsg, WPARAM wParam, 
 			int width = LOWORD(lParam);
 			int height = HIWORD(lParam);
 			std::cout << "Window resized!\nNew (width, height) : " << "(" << width << ", " << height << ")\n";
+
+			HandleWindowResize(width, height);
+
 			return 0;
 		}
 
@@ -79,7 +78,6 @@ void GEngine::EngineWindow::StartMessageLoop()
 	MSG msg = { };
 	while(!_isWindowClosed) // This loop will determine our FPS
 	{
-		std::cout << "Hiii\n";
 		if(GetMessage(&msg, nullptr, 0, 0))
 		{
 			TranslateMessage(&msg);
@@ -92,9 +90,7 @@ void GEngine::EngineWindow::StartMessageLoop()
 
 void GEngine::EngineWindow::OnUpdate()
 {
-	std::cout << "Window Updating...\n";
-
-	SetBkColor(GGraphics::GColor(GGraphics::Color::RED));
+	ClearBg();
 
 	// Every frame should be drawn here!
 	EventManager::NotifyWindowUpdate(this);
@@ -152,7 +148,7 @@ void GEngine::EngineWindow::SetActiveBuffer(void *buffer)
 	              0, // The y-coordinate of the source rectangle (framebuffer) in the image.
 	              _windowWidth,      // Framebuffer's width (Same as our window)
 	              _windowHeight,    // Framebuffer's height (Same as our window)
-	              buffer,              // Array of bytes (Framebuffer) (Color info)
+	              buffer,              // Array of bytes (Framebuffer) (ColorEnum info)
 	              &_bitmapInfo,
 	              DIB_RGB_COLORS,     // The color table contains literal RGB values.
 	              SRCCOPY               // Copies the content from framebuffer to window
@@ -184,7 +180,7 @@ void GEngine::EngineWindow::SwapBuffers()
 	}
 }
 
-void GEngine::EngineWindow::DrawPixel(int x, int y, GGraphics::GColor newColor)
+void GEngine::EngineWindow::DrawPixel(int x, int y, GGraphics::Color newColor)
 {
 	if(x == _windowWidth)
 		x--;
@@ -195,13 +191,7 @@ void GEngine::EngineWindow::DrawPixel(int x, int y, GGraphics::GColor newColor)
 	ColorPixel(x, y, newColor);
 }
 
-void GEngine::EngineWindow::DrawPixel(int x, int y)
-{
-	GGraphics::GColor color(GGraphics::Color::WHITE);
-	DrawPixel(x, y, color);
-}
-
-void GEngine::EngineWindow::ColorPixel(int x, int y, GGraphics::GColor newColor)
+void GEngine::EngineWindow::ColorPixel(int x, int y, GGraphics::Color newColor)
 {
 	auto *pixel = (uint32_t *)GetActiveBuffer();
 
@@ -213,7 +203,7 @@ void GEngine::EngineWindow::ColorPixel(int x, int y, GGraphics::GColor newColor)
 	*pixel = color;
 }
 
-void GEngine::EngineWindow::SetBkColor(GGraphics::GColor bkColor)
+void GEngine::EngineWindow::ClearBg(GGraphics::Color bkColor)
 {
 	auto *pixel = (uint32_t *)GetActiveBuffer();
 
@@ -231,3 +221,28 @@ GEngine::EngineWindow::~EngineWindow()
 	DeallocateBuffer(_frameBuffer02);
 	ReleaseDC(Window(), _hdc);
 }
+
+int GEngine::EngineWindow::GetWidth()
+{
+	return _windowWidth;
+}
+
+int GEngine::EngineWindow::GetHeight()
+{
+	return _windowHeight;
+}
+
+void GEngine::EngineWindow::HandleWindowResize(int newWidth, int newHeight)
+{
+	DeallocateBuffer(_frameBuffer01);
+	DeallocateBuffer(_frameBuffer02);
+
+	_windowWidth = newWidth;
+	_windowHeight = newHeight;
+
+	AllocateBuffer(_frameBuffer01);
+	AllocateBuffer(_frameBuffer02);
+
+	AllocateBitMapInfo();
+}
+
