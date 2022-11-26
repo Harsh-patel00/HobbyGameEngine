@@ -6,9 +6,11 @@
 #define GAMEENGINE_RENDERSYSTEM_H
 
 #include "GEngine/EcsCore/System.h"
-#include "ECS/Components/GameObject.h"
-#include "GMath/Vector.h"
 #include "EventManager.h"
+#include "GMath/Vector.h"
+
+#include "ECS/Components/Transform.h"
+#include "ECS/Components/MeshComponent.h"
 
 class RenderSystem : ECS::System
 {
@@ -27,16 +29,28 @@ class RenderSystem : ECS::System
 
 		void OnUpdate(float dt, GEngine::GameWorld *world, GEngine::EngineWindow *window)
 		{
-			GGraphics::Primitives2d::Line line{{0, 0, 0}, {100, 100, 0}, window, GGraphics::Color(GGraphics::ColorEnum::CYAN)};
 
-			line.Draw();
+			DrawFullScreenTriangle(window);
 
 			// Looping through all entities with GameObject component
-			for (auto entId : world->GetEcsManager()->EntitiesWithComponents<GameObject, MeshRenderer>())
+			for (auto entId : world->GetEcsManager()->EntitiesWithComponents<Transform, MeshComponent>())
 			{
-				auto go = world->GetEcsManager()->GetComponent<GameObject>(entId);
-				auto renderer = world->GetEcsManager()->GetComponent<MeshRenderer>(entId);
+				auto go = world->GetEcsManager()->GetComponent<Transform>(entId);
+				auto meshComp = world->GetEcsManager()->GetComponent<MeshComponent>(entId);
+//				meshComp->mesh.Draw(window, GGraphics::Color(GGraphics::ColorEnum::RED));
 			}
+		}
+
+		void DrawFullScreenTriangle(GEngine::EngineWindow *window) const
+		{
+			GGraphics::Primitives2d::Triangle t
+			{
+				{0, 0, 0},
+				{static_cast<float>(window->GetWidth()/2), static_cast<float>(window->GetHeight()), 0},
+				{static_cast<float>(window->GetWidth()), 0, 0}
+			};
+
+			t.Draw(window, GGraphics::Color(GGraphics::ColorEnum::CYAN));
 		}
 };
 

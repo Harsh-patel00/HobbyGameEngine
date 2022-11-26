@@ -2,14 +2,14 @@
 // Created by Harsh on 20-03-2022.
 //
 
-#ifndef GAMEENGINE_GGRAPHICS_H
-#define GAMEENGINE_GGRAPHICS_H
-
 #include <cmath>
 
 #include "Color.h"
 #include "GEngine/GWindow/EngineWindow.h"
-#include "GMath/Vector.h"
+#include "GMath/Point.h"
+
+#ifndef GAMEENGINE_PRIMITIVES2D_H
+#define GAMEENGINE_PRIMITIVES2D_H
 
 namespace GGraphics
 {
@@ -197,33 +197,23 @@ namespace GGraphics
 		   };
 		   struct Triangle
 		   {
-				   std::vector<GMath::Point3f> points{}; // This vector will contain 3 points
+			   GMath::Point3f points[3] {}; // This array will contain 3 points
 
-				   Triangle() = default;
+			   Triangle() = default;
+			   Triangle(GMath::Point3f p1, GMath::Point3f p2, GMath::Point3f p3)
+			   {
+				   points[0] = p1;
+				   points[1] = p2;
+				   points[2] = p3;
+			   }
 
-				   Triangle(GMath::Point3f p1, GMath::Point3f p2, GMath::Point3f p3, GEngine::EngineWindow *window,
-				            Color lineColor)
-				   {
-					   points.push_back(p1);
-					   points.push_back(p2);
-					   points.push_back(p3);
-
-					   pDrawWindow = window;
-					   color = lineColor;
-				   }
-
-				   void Draw()
-				   {
-					   Line{points[0], points[1], pDrawWindow, color}.Draw();
-					   Line{points[1], points[2], pDrawWindow, color}.Draw();
-					   Line{points[2], points[0], pDrawWindow, color}.Draw();
-				   }
-
-			   private:
-				   GEngine::EngineWindow *pDrawWindow{};
-				   Color color{};
-
+			   void Draw(GEngine::EngineWindow *window, Color lineColor)
+			   {
+				   Line{points[0], points[1], window, lineColor}.Draw();
+				   Line{points[1], points[2], window, lineColor}.Draw();
+				   Line{points[2], points[0], window, lineColor}.Draw();
+			   }
 		   };
    };
 }
-#endif //GAMEENGINE_GGRAPHICS_H
+#endif //GAMEENGINE_PRIMITIVES2D_H

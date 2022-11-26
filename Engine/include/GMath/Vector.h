@@ -13,7 +13,7 @@ namespace GMath
 #define GAMEENGINE_MVECTOR_H
 
    template<typename T>
-   struct Vector : public Point<T>
+   struct Vector : public Point<T, 3>
    {
 	   private:
 		   float _length{};
@@ -32,6 +32,25 @@ namespace GMath
 			   SetLength();
 		   }
 
+		   explicit Vector(Point<T, 3> p)
+		   {
+			   this->x = p.x;
+			   this->y = p.y;
+			   this->z = p.z;
+
+			   SetLength();
+		   }
+
+		   explicit Vector(Point<T, 4> p)
+		   {
+			   this->x = p.x;
+			   this->y = p.y;
+			   this->z = p.z;
+			   this->w = p.w;
+
+			   SetLength();
+		   }
+
 		   // Member Functions
 		   float Dot(const Vector &b)
 		   {
@@ -46,8 +65,7 @@ namespace GMath
 			   // cy = azbx − axbz
 			   // cz = axby − aybx
 
-			   return Vector<T>((this->y * b.z - this->z * b.y), (this->z * b.x - this->x * b.z),
-			                    (this->x * b.y - this->y * b.x));
+			   return Vector((this->y * b.z - this->z * b.y), (this->z * b.x - this->x * b.z), (this->x * b.y - this->y * b.x));
 		   }
 
 		   float AngleWith(const Vector &b)
@@ -76,6 +94,12 @@ namespace GMath
 			   return _length;
 		   }
 
+		   float Distance(const Vector &b)
+		   {
+			   // Distance from this vector to b
+				return Vector(b - *this).GetLength();
+		   }
+
 	   private:
 		   void SetLength()
 		   {
@@ -87,12 +111,6 @@ namespace GMath
 		   friend std::ostream &operator<<(std::ostream &os, const Vector &v)
 		   {
 			   os << "Vec(" << v.x << ", " << v.y << ", " << v.z << ")";
-			   return os;
-		   }
-
-		   friend std::ostream &operator<<(std::ostream &os, const std::unique_ptr<Vector> v)
-		   {
-			   os << "Vec(" << v->x << ", " << v->y << ", " << v.z << ")";
 			   return os;
 		   }
 
@@ -125,12 +143,6 @@ namespace GMath
 		   {
 			   return Vector(v.x * s, v.y * s, v.z * s);
 		   }
-
-//		   friend std::ostream& operator<<(std::ostream &os, const Vector &v)
-//		   {
-//				os << "Vector :: { " << v.x << ", " << v.y << ", " << v.z << " }\n";
-//				return os;
-//		   }
    };
 
    using Vec3i = Vector<int>;

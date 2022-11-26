@@ -4,13 +4,14 @@
 #include "GEngine/GameEngine.h"
 #include "GEngine/GWindow/EngineWindow.h"
 
-#include "ECS/Components/MeshRenderer.h"
+#include "ECS/Components/MeshComponent.h"
 #include "ECS/Components/InputCon.h"
-#include "ECS/Components/GameObject.h"
+#include "ECS/Components/Transform.h"
 
 #include "ECS/Systems/RenderSystem.h"
 #include "ECS/Systems/MoveSystem.h"
 #include "ECS/Systems/InputSystem.h"
+#include "GMath/Matrix4x4.h"
 
 bool isGameOver = false;
 std::condition_variable cv;
@@ -30,7 +31,7 @@ class Initiate
 		GEngine::EngineWindow *window{};
 
 	public: // Entities
-		ECS::EntityID lineEnt{};
+		ECS::EntityID cube{};
 
 	public: // Systems
 		std::unique_ptr<MoveSystem> ms{};
@@ -61,10 +62,15 @@ class Initiate
 		void CreateAndSetupEntities()
 		{
 			std::cout << "Creating and Setting up entities...\n";
-			lineEnt = em->CreateEntity();
-			em->SetEntityName(lineEnt, "Line");
-			em->AssignComponentAndSetDefaultValues<GameObject>(lineEnt);
-			em->AssignComponentAndSetDefaultValues<MeshRenderer>(lineEnt);
+			cube = em->CreateEntity();
+			em->SetEntityName(cube, "Default Cube");
+			em->AssignComponentAndSetDefaultValues<Transform>(cube);
+			em->AssignComponent<MeshComponent>(cube);
+
+			MeshComponent mc{};
+			mc.mesh = *new GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
+
+			em->SetComponentValue<MeshComponent>(mc, cube);
 
 			std::cout << "Creating and Setting up entities done.\n";
 		}
