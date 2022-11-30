@@ -27,7 +27,7 @@ namespace ECS
 		   // This function is called when the system is created
 		   virtual void OnCreate(GEngine::GameWorld *world);
 		   // This is a pure virtual function, which runs every frame
-		   virtual void OnUpdate(float dt, GEngine::GameWorld *world) = 0;
+		   virtual void OnUpdate(double dt, GEngine::GameWorld *world) = 0;
    };
 
 #endif //GAMEENGINE_SYSTEM_H

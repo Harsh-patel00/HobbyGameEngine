@@ -148,7 +148,7 @@ class InputSystem : ECS::System
 //			std::cout << "Overridden OnCreate...\n";
 		}
 
-		void OnUpdate(float dt, GEngine::GameWorld *world) override
+		void OnUpdate(double dt, GEngine::GameWorld *world) override
 		{
 			// CheckKeys(world->GetEcsManager());
 			// CheckMouse();

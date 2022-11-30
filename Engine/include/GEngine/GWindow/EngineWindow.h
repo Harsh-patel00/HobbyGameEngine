@@ -30,11 +30,13 @@ namespace GEngine
    {
 	   private:
 		   int _windowWidth{}, _windowHeight{};
+		   std::string _windowTitle{};
 		   bool _isDefaultBufferActive = true;
 		   void *_frameBuffer01{}; // Framebuffer stores pixel addresses
 		   void *_frameBuffer02{}; // Second framebuffer is used for double buffering
 		   BITMAPINFO _bitmapInfo{};
 		   HDC _hdc{};
+		   std::chrono::duration<double> _elapsedTime{};
 
 		   bool _isWindowClosed = false;
 
@@ -44,15 +46,15 @@ namespace GEngine
 
 	   public:
 		   EngineWindow() = default;
-		   EngineWindow(int windowWidth, int windowHeight, const wchar_t *windowTitle);
+		   EngineWindow(int windowWidth, int windowHeight, std::string windowTitle);
 
 		   ~EngineWindow();
 
 		   PCWSTR  ClassName() const override { return L"Engine Window Class"; }
 		   LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
-		   // This will put pixel on the screen, with custom color or white as default color
 		   void DrawPixel(int x, int y, GGraphics::Color = GGraphics::Color(GGraphics::ColorEnum::WHITE));
+		   double GetDeltaTime() const;
 
 	   private:
 		   void Show();

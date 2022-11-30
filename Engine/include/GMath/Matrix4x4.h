@@ -52,7 +52,7 @@ namespace GMath
 			   {
 				   for (int j = 0; j < size; ++j)
 				   {
-					   int interResult = 0;
+					   T interResult = 0;
 					   for (int k = 0; k < size; ++k)
 					   {
 						   interResult += this->mat[i][k] * mat2.mat[k][j];
@@ -90,6 +90,45 @@ namespace GMath
 
 			   return scaledMatrix;
 		   }
+		   Point<T, size> operator*(const Point<T, size> &p)
+		   {
+			   Point<T, size> result;
+
+			   for (int j = 0; j < size; ++j)
+			   {
+				   T interResult = 0;
+				   for (int k = 0; k < size; ++k)
+				   {
+					   interResult += mat[j][k] * p.point[0][k];
+				   }
+				   result.point[0][j] = interResult;
+			   }
+
+			   if(size == 1)
+			   {
+				   result.x = result.point[0][0];
+			   }
+			   else if(size == 2)
+			   {
+				   result.x = result.point[0][0];
+				   result.y = result.point[0][1];
+			   }
+			   else if(size == 3)
+			   {
+				   result.x = result.point[0][0];
+				   result.y = result.point[0][1];
+				   result.z = result.point[0][2];
+			   }
+			   else if(size == 4)
+			   {
+				   result.x = result.point[0][0];
+				   result.y = result.point[0][1];
+				   result.z = result.point[0][2];
+				   result.w = result.point[0][3];
+			   }
+
+			   return result;
+		   }
 		   void operator*=(const Matrix &matrix)
 		   {
 			   *this = *this * matrix;
@@ -118,7 +157,7 @@ namespace GMath
 			   {
 				   for (int j = 0; j < size; ++j)
 				   {
-					   int interResult = 0;
+					   T interResult = 0;
 					   for (int k = 0; k < size; ++k)
 					   {
 						   interResult += mat1.mat[i][k] * mat2.mat[k][j];
@@ -134,10 +173,10 @@ namespace GMath
 
 			   for (int j = 0; j < size; ++j)
 			   {
-				   int interResult = 0;
+				   float interResult = 0;
 				   for (int k = 0; k < size; ++k)
 				   {
-					   interResult += p.point[0][k] * mat1.mat[k][j];
+					   interResult += p.point[0][k] * mat1.mat[j][k];
 				   }
 				   result.point[0][j] = interResult;
 			   }
@@ -180,6 +219,34 @@ namespace GMath
 
 			   return scaledMatrix;
 		   }
+
+	   public:
+		   GMath::Point3f static Matrix4Vec3Multiplication(GMath::Point3f pointToMultiply, Matrix<float, 4> mat4F)
+		   {
+			   GMath::Point4f intermediatePoint{pointToMultiply, 1};
+			   intermediatePoint = mat4F * intermediatePoint;
+			   if(intermediatePoint.w != 0)
+			   {
+				   pointToMultiply =
+						   {
+								   intermediatePoint.x / intermediatePoint.w,
+								   intermediatePoint.y / intermediatePoint.w,
+								   intermediatePoint.z / intermediatePoint.w
+						   };
+			   }
+			   else
+			   {
+				   pointToMultiply =
+						   {
+								   intermediatePoint.x,
+								   intermediatePoint.y,
+								   intermediatePoint.z
+						   };
+			   }
+
+			   return pointToMultiply;
+		   }
+
    };
 
    using Mat2f = Matrix<float, 2>;

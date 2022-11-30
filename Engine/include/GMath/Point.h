@@ -11,7 +11,7 @@ namespace GMath
 {
 
    template <typename T, int size>
-   struct Point
+   class Point
    {
 	   public:
 		   // A point is 2 dimensional array with only 1 row and 'size' columns
@@ -43,6 +43,46 @@ namespace GMath
 			   point[0][3] = w;
 		   }
 
+		   Point(Point<T, 2> p2, T z, T w)
+		   {
+			   point[0][0] = p2.x;
+			   point[0][1] = p2.y;
+			   point[0][2] = z;
+			   point[0][3] = w;
+
+			   x = p2.x;
+			   y = p2.y;
+			   this->z = z;
+			   this->w = w;
+		   }
+
+		   Point(Point<T, 3> p3, T w)
+		   {
+			   point[0][0] = p3.x;
+			   point[0][1] = p3.y;
+			   point[0][2] = p3.z;
+			   point[0][3] = w;
+
+			   x = p3.x;
+			   y = p3.y;
+			   z = p3.z;
+			   this->w = w;
+		   }
+
+		   Point(Point<T, 4> &p4)
+		   {
+			   point[0][0] = p4.x;
+			   point[0][1] = p4.y;
+			   point[0][2] = p4.z;
+			   point[0][3] = p4.w;
+
+			   x = p4.x;
+			   y = p4.y;
+			   z = p4.z;
+			   w = p4.w;
+		   }
+
+	   public:
 		   friend std::ostream& operator<<(std::ostream &os, const Point &p)
 		   {
 			   if(size == 2)
@@ -52,6 +92,26 @@ namespace GMath
 			   if(size == 4)
 				   os << "Point :: { " << p.x << ", " << p.y << ", " << p.z << ", " << p.w << " }";
 			   return os;
+		   }
+		   Point operator+(const T &scalar)
+		   {
+			   return Point(this->x + scalar, this->y + scalar, this->z + scalar, this->w + scalar);
+		   }
+		   Point operator-(const T &scalar)
+		   {
+			   return Point(this->x - scalar, this->y - scalar, this->z - scalar, this->w - scalar);
+		   }
+		   Point operator*(const T &s)
+		   {
+			   return Point(this->x * s, this->y * s, this->z * s, this->w * s);
+		   }
+		   friend Point operator+(const T &scalar, const Point &p)
+		   {
+			   return Point(p.x + scalar, p.y + scalar, p.z + scalar, p.w + scalar);
+		   }
+		   friend Point operator-(const T &scalar, const Point &p)
+		   {
+			   return Point(p.x - scalar, p.y - scalar, p.z - scalar, p.w - scalar);
 		   }
    };
 

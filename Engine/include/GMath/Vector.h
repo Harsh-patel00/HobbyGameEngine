@@ -124,9 +124,9 @@ namespace GMath
 			   return Vector(this->x + s, this->y + s, this->z + s);
 		   }
 
-		   Vector operator-()
+		   Vector& operator-()
 		   {
-			   return Vector(-this->x, -this->y, -this->z);
+			   return *(new Vector(-this->x, -this->y, -this->z));
 		   }
 
 		   Vector operator-(const Vector &b)
@@ -134,12 +134,12 @@ namespace GMath
 			   return Vector(this->x - b.x, this->y - b.y, this->z - b.z);
 		   }
 
-		   Vector operator*(const int &s)
+		   Vector operator*(const T &s)
 		   {
 			   return Vector(this->x * s, this->y * s, this->z * s);
 		   }
 
-		   friend Vector operator*(const int &s, const Vector &v)
+		   friend Vector operator*(const T &s, const Vector &v)
 		   {
 			   return Vector(v.x * s, v.y * s, v.z * s);
 		   }

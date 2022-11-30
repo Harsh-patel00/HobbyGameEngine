@@ -24,7 +24,7 @@ void GEngine::GameEngine::CreateWindowOnSeparateThread()
 		std::cout << "\nCreating a window...\n";
 
 		_windowMutex.lock();
-		_window = std::make_unique<EngineWindow>(500, 600, L"Gagged Engine");
+		_window = std::make_unique<EngineWindow>(800, 600, "Gagged Engine"); // Limit this height to 768 (Max pixels height on the device)
 		_windowMutex.unlock();
 	});
 

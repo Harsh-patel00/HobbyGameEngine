@@ -64,12 +64,16 @@ class Initiate
 			std::cout << "Creating and Setting up entities...\n";
 			cube = em->CreateEntity();
 			em->SetEntityName(cube, "Default Cube");
-			em->AssignComponentAndSetDefaultValues<Transform>(cube);
+			em->AssignComponent<Transform>(cube);
 			em->AssignComponent<MeshComponent>(cube);
 
 			MeshComponent mc{};
 			mc.mesh = *new GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
 
+			em->SetComponentValue<Transform>({
+												{10, 5, 3},
+											    {0, 0, 0},
+											    {1, 1, 1}}, cube);
 			em->SetComponentValue<MeshComponent>(mc, cube);
 
 			std::cout << "Creating and Setting up entities done.\n";
@@ -79,9 +83,15 @@ class Initiate
 		{
 			ms = std::make_unique<MoveSystem>("Move");
 			ms->OnCreate(world);
+		}
 
+		void CreateRenderSystem(void* windowRef)
+		{
 			rs = std::make_unique<RenderSystem>("Render");
-			rs->OnCreate(world);
+
+			auto *pWindow = reinterpret_cast<GEngine::EngineWindow*>(windowRef);
+
+			rs->OnCreate(world, pWindow);
 		}
 
 		void SetListener()
@@ -92,18 +102,22 @@ class Initiate
 				isGameOver = true;
 				cv.notify_all();
 			});
-			EventManager::WindowUpdate.AddListener([this](void* windowRef){ UpdateSystems(windowRef); });
+
+			EventManager::WindowCreate.AddListener([this](void* windowRef){ CreateRenderSystem(windowRef); });
+
+			EventManager::WindowUpdate.AddListener([this](void* windowRef, double elapsedTime){ UpdateSystems(windowRef, elapsedTime); });
+
 		}
 
-		void UpdateSystems(void* windowRef)
+		void UpdateSystems(void* windowRef, double elapsedTime)
 		{
-			ms->OnUpdate(dt, world);
+			ms->OnUpdate(elapsedTime, world);
 
 			auto *pWindow = reinterpret_cast<GEngine::EngineWindow*>(windowRef);
 
 			// Render System
 			// Always call at last so that every thing is rendered
-			rs->OnUpdate(dt, world, pWindow);
+			rs->OnUpdate(elapsedTime, world, pWindow);
 		}
 };
 

@@ -6,7 +6,8 @@
 #include "GEngine/GWindow/EngineWindow.h"
 
 Action<> EventManager::QuitGame{};
-Action<void*> EventManager::WindowUpdate{};
+Action<void*, double> EventManager::WindowUpdate{};
+Action<void*> EventManager::WindowCreate{};
 
 GEngine::LRESULT GEngine::EngineWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -38,16 +39,20 @@ GEngine::LRESULT GEngine::EngineWindow::HandleMessage(UINT uMsg, WPARAM wParam, 
 	}
 }
 
-GEngine::EngineWindow::EngineWindow(int windowWidth, int windowHeight, const wchar_t *windowTitle)
+GEngine::EngineWindow::EngineWindow(int windowWidth, int windowHeight, std::string windowTitle)
 {
 	std::cout << "Engine window initializing...\n";
 
 	_windowWidth = windowWidth;
 	_windowHeight = windowHeight;
+	_windowTitle = windowTitle;
 
 	std::cout << "Engine window creation in progress...\n";
 
-	Create(windowTitle, windowWidth, windowHeight);
+	// Convert from string to wstring
+	std::wstring widestr = std::wstring(windowTitle.begin(), windowTitle.end());
+
+	Create(widestr.c_str(), windowWidth, windowHeight, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
 
 	std::cout << "Engine window creation done...\n";
 
@@ -59,6 +64,8 @@ GEngine::EngineWindow::EngineWindow(int windowWidth, int windowHeight, const wch
 
 	AllocateBitMapInfo();
 	_hdc = GEngine::GetDC(Window());
+
+	EventManager::NotifyWindowCreate(this);
 
 	Show();
 }
@@ -85,17 +92,24 @@ void GEngine::EngineWindow::StartMessageLoop()
 		}
 
 		OnUpdate();
+
+		std::string finalWindowTitle = _windowTitle + " :: FPS :: " + std::to_string(1/_elapsedTime.count());
+		std::wstring finalWindowTitleW = std::wstring(finalWindowTitle.begin(), finalWindowTitle.end());
+		GEngine::SetWindowTextW(Window(), finalWindowTitleW.c_str());
 	}
 }
 
 void GEngine::EngineWindow::OnUpdate()
 {
+	auto start = std::chrono::high_resolution_clock::now();
 	ClearBg();
 
 	// Every frame should be drawn here!
-	EventManager::NotifyWindowUpdate(this);
+	EventManager::NotifyWindowUpdate(this, _elapsedTime.count());
 
 	SwapBuffers();
+	auto end = std::chrono::high_resolution_clock::now();
+	_elapsedTime = end - start;
 }
 
 void GEngine::EngineWindow::InitBuffers()
@@ -246,3 +260,7 @@ void GEngine::EngineWindow::HandleWindowResize(int newWidth, int newHeight)
 	AllocateBitMapInfo();
 }
 
+double GEngine::EngineWindow::GetDeltaTime() const
+{
+	return _elapsedTime.count();
+}

@@ -39,21 +39,28 @@ namespace GGraphics
 				   Color color{};
 
 			   private:
+				   // This algorithm eliminates all the floating point operations and divisions
 				   void UseBresenham()
 				   {
-					   float x0 = start.x, y0 = start.y, x1 = end.x, y1 = end.y;
+					   int  x0 = std::lround(start.x),
+					        y0 = std::lround(start.y),
+					        x1 = std::lround(end.x),
+					        y1 = std::lround(end.y);
 
-					   float dx = std::abs(x1 - x0);
+					   int dx = std::abs(x1 - x0);
 					   int sx = x0 < x1 ? 1 : -1;
-					   float dy = -std::abs(y1 - y0);
+					   int dy = -std::abs(y1 - y0);
 					   int sy = y0 < y1 ? 1 : -1;
-					   float error = dx + dy;
+					   int error = dx + dy;
 
 					   while(true)
 					   {
 						   pDrawWindow->DrawPixel(x0, y0, color);
+
 						   if(x0 == x1 && y0 == y1) break;
-						   float e2 = 2 * error;
+
+						   int e2 = 2 * error;
+
 						   if(e2 >= dy)
 						   {
 							   if(x0 == x1) break;
@@ -212,6 +219,13 @@ namespace GGraphics
 				   Line{points[0], points[1], window, lineColor}.Draw();
 				   Line{points[1], points[2], window, lineColor}.Draw();
 				   Line{points[2], points[0], window, lineColor}.Draw();
+			   }
+
+			   void Print()
+			   {
+				   std::cout << "Point[0] :: " << points[0] << "\n";
+				   std::cout << "Point[1] :: " << points[1] << "\n";
+				   std::cout << "Point[2] :: " << points[2] << "\n";
 			   }
 		   };
    };

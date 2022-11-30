@@ -12,38 +12,57 @@ namespace GGraphics
 	class Primitives3d
 	{
 		public:
-			// Cube in local coordinates
+			// Cube in local coordinates (It can be defined anywhere)
 			struct Cube
 			{
 				static GGraphics::Primitives2d::Triangle tris[12];
+
+				private:
+					static GMath::Point3f A;
+					static GMath::Point3f B;
+					static GMath::Point3f C;
+					static GMath::Point3f D;
+					static GMath::Point3f E;
+					static GMath::Point3f F;
+					static GMath::Point3f G;
+					static GMath::Point3f H;
 			};
 	};
+
+   GMath::Point3f Primitives3d::Cube::A{0, 0, 0};
+   GMath::Point3f Primitives3d::Cube::B{0, 1, 0};
+   GMath::Point3f Primitives3d::Cube::C{1, 1, 0};
+   GMath::Point3f Primitives3d::Cube::D{1, 0, 0};
+   GMath::Point3f Primitives3d::Cube::E{1, 0, 1};
+   GMath::Point3f Primitives3d::Cube::F{1, 1, 1};
+   GMath::Point3f Primitives3d::Cube::G{0, 1, 1};
+   GMath::Point3f Primitives3d::Cube::H{0, 0, 1};
 
 	GGraphics::Primitives2d::Triangle Primitives3d::Cube::tris[12]
 	{
 			// Front (ABC, ACD)
-			{{-0.5f, -0.5f, -0.5f}, {-0.5f, 1, -0.5f}, {1, 1, -0.5f}},
-			{{-0.5f, -0.5f, -0.5f}, {1, 1, -0.5f}, {1, -0.5f, -0.5f}},
+			{A, B, C},
+			{A, C, D},
 
 			// Right (DCF, DFE)
-			{{1, -0.5f, -0.5f}, {1, 1, -0.5f}, {1, 1, 1}},
-			{{1, -0.5f, -0.5f}, {1, 1, 1}, {1, -0.5f, 1}},
+			{D, C, F},
+			{D, F, E},
 
 			// Back (EFG, EGH)
-			{{1, -0.5f, 1}, {1, 1, 1}, {-0.5f, 1, 1}},
-			{{1, -0.5f, 1}, {-0.5f, 1, 1}, {-0.5f, -0.5f, 1}},
+			{E, F, G},
+			{E, G, H},
 
 			// Left (HGB, HBA)
-			{{-0.5f, -0.5f, 1}, {-0.5f, 1, 1}, {-0.5f, 1, -0.5f}},
-			{{-0.5f, -0.5f, 1}, {-0.5f, 1, -0.5f}, {-0.5f, -0.5f, -0.5f}},
+			{H, G, B},
+			{H, B, A},
 
 			// Top (BGF, BFC)
-			{{-0.5f, 1, -0.5f}, {-0.5f, 1, 1},  {1, 1, 1}},
-			{{-0.5f, 1, -0.5f}, {1, 1, 1}, {1, 1, -0.5f}},
+			{B, G, F},
+			{B, F, C},
 
-			// Bottom (ADE, AEH)
-			{{-0.5f, 1, -0.5f}, {1, -0.5f, -0.5f}, {1, -0.5f, 1}},
-			{{-0.5f, 1, -0.5f}, {1, -0.5f, 1}, {-0.5f, -0.5f, 1}},
+			// Bottom (AHE, AED)
+			{A, H, E},
+			{A, E, D},
 	};
 }
 

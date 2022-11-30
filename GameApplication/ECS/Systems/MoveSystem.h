@@ -27,7 +27,7 @@ class MoveSystem : ECS::System
 //			EventManager::LeftKeyPressed.AddListener(MoveLeft);
 		}
 
-		void OnUpdate(float dt, GEngine::GameWorld *world) override
+		void OnUpdate(double dt, GEngine::GameWorld *world) override
 		{
 			for (auto ent : world->GetEcsManager()->EntitiesWithComponents<Transform, MeshComponent, InputControl>())
 			{
