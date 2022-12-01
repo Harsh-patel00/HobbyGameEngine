@@ -29,10 +29,10 @@ class MoveSystem : ECS::System
 
 		void OnUpdate(double dt, GEngine::GameWorld *world) override
 		{
-			for (auto ent : world->GetEcsManager()->EntitiesWithComponents<Transform, MeshComponent, InputControl>())
+			for (auto ent : world->GetEcsManager()->EntitiesWithComponents<Transform, MeshComponent, Components::InputControl>())
 			{
 				auto tc = world->GetEcsManager()->GetComponent<Transform>(ent);
-				auto ic = world->GetEcsManager()->GetComponent<InputControl>(ent);
+				auto ic = world->GetEcsManager()->GetComponent<Components::InputControl>(ent);
 
 				if(ic->right)
 				{
@@ -47,7 +47,7 @@ class MoveSystem : ECS::System
 				// Set the updated position
 				world->GetEcsManager()->SetComponentValue<Transform>({tc->position}, ent);
 				// Reset the values of the input so that the above conditions are always false
-				world->GetEcsManager()->SetComponentValue<InputControl>({}, ent);
+				world->GetEcsManager()->SetComponentValue<Components::InputControl>({}, ent);
 			}
 
 		}

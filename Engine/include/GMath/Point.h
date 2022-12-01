@@ -22,21 +22,33 @@ namespace GMath
 
 		   // Constructors
 		   Point() = default;
-		   Point(T x, T y) : x(x), y(y)
+		   Point(T x, T y)
 		   {
+			   this->x = x;
+			   this->y = y;
+
 			   point[0][0] = x;
 			   point[0][1] = y;
 		   }
 
-		   Point(T x, T y, T z) : x(x), y(y), z(z)
+		   Point(T x, T y, T z)
 		   {
+			   this->x = x;
+			   this->y = y;
+			   this->z = z;
+
 			   point[0][0] = x;
 			   point[0][1] = y;
 			   point[0][2] = z;
 		   }
 
-		   Point(T x, T y, T z, T w) : x(x), y(y), z(z), w(w)
+		   Point(T x, T y, T z, T w)
 		   {
+			   this->x = x;
+			   this->y = y;
+			   this->z = z;
+			   this->w = w;
+
 			   point[0][0] = x;
 			   point[0][1] = y;
 			   point[0][2] = z;

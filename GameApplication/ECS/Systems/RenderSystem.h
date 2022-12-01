@@ -8,17 +8,20 @@
 #include "GEngine/EcsCore/System.h"
 #include "EventManager.h"
 #include "GMath/Vector.h"
-#include "GGraphics/ModellingTransformation.h"
-#include "GGraphics/ViewingTransformation.h"
+#include "GGraphics/Transformations.h"
 
 #include "ECS/Components/Transform.h"
 #include "ECS/Components/MeshComponent.h"
 
+using Transform = Components::Transform;
+using Camera = Components::Camera;
+using MeshComponent = Components::MeshComponent;
+
 class RenderSystem : ECS::System
 {
 	private:
-		GGraphics::Camera _sceneCamera{};
 		GEngine::EngineWindow *pWindow{};
+		Camera *_pSceneCamera{};
 	public:
 		explicit RenderSystem(const std::string &name) : System(name){}
 
@@ -32,12 +35,18 @@ class RenderSystem : ECS::System
 
 			pWindow = window;
 
-			_sceneCamera = {0.1f, 1000.f, 60.f, (float) window->GetWidth() / (float) window->GetHeight()};
+			for (auto entId : world->GetEcsManager()->EntitiesWithComponents<Transform, Camera>())
+			{
+				auto transform = world->GetEcsManager()->GetComponent<Transform>(entId);
+				_pSceneCamera = world->GetEcsManager()->GetComponent<Camera>(entId);
+				_pSceneCamera->origin = transform->position;
+			}
 
 			for (auto entId : world->GetEcsManager()->EntitiesWithComponents<Transform, MeshComponent>())
 			{
 				auto transform = world->GetEcsManager()->GetComponent<Transform>(entId);
 				auto meshComp = world->GetEcsManager()->GetComponent<MeshComponent>(entId);
+
 				ProcessMesh(meshComp->mesh, *transform);
 			}
 		}
@@ -46,7 +55,7 @@ class RenderSystem : ECS::System
 
 		void OnUpdate(double dt, GEngine::GameWorld *world, GEngine::EngineWindow *window) { }
 
-		void DrawFullScreenTriangle(GEngine::EngineWindow *window)
+		static void DrawFullScreenTriangle(GEngine::EngineWindow *window)
 		{
 			GGraphics::Primitives2d::Triangle t
 					{
@@ -75,6 +84,7 @@ class RenderSystem : ECS::System
 			}
 
 			ConvertLocalToWorld(meshCopy, transform);
+			ConvertWorldToView(meshCopy);
 
 			std::cout << "Transformed Mesh :: \n";
 
@@ -108,19 +118,28 @@ class RenderSystem : ECS::System
 				// For each point in triangle
 				for(GMath::Point3f &point : transformedTri.points)
 				{
-					// Get the translation matrix for the point
-					// Ti = Translation to origin
-					GMath::Mat4f Ti = GGraphics::Transformation::GetTranslationMatrix(point * -1);
-					// Translate it to the origin
-					GMath::Point3f translatedPoint = GMath::Mat4f::Matrix4Vec3Multiplication(point, Ti);
 					// Apply Transformations
-					translatedPoint = GMath::Mat4f::Matrix4Vec3Multiplication(translatedPoint, matL2W);
-					// Translate back to the original place
-					// To = Translation to original place
-					GMath::Mat4f To = GGraphics::Transformation::GetTranslationMatrix(point);
-					point = GMath::Mat4f::Matrix4Vec3Multiplication(translatedPoint, To);
+					point = GMath::Mat4f::Matrix4Vec3Multiplication(point, matL2W);
 				}
 
+				transformedTris.push_back(transformedTri);
+			}
+			mesh.SetTriangles(transformedTris);
+		}
+
+		void ConvertWorldToView(GGraphics::Mesh &mesh)
+		{
+			std::vector<GGraphics::Primitives2d::Triangle> transformedTris{};
+			for (auto tri : mesh.GetTriangles())
+			{
+				GGraphics::Primitives2d::Triangle transformedTri = tri;
+				for(GMath::Point3f &point : transformedTri.points)
+				{
+					GMath::Mat4f w2v = GGraphics::Transformation::GetWorldToViewMatrix
+							(_pSceneCamera->origin, _pSceneCamera->lookAt, _pSceneCamera->upDirection);
+
+					point = GMath::Mat4f::Matrix4Vec3Multiplication(point, w2v);
+				}
 				transformedTris.push_back(transformedTri);
 			}
 			mesh.SetTriangles(transformedTris);

@@ -7,6 +7,7 @@
 #include "ECS/Components/MeshComponent.h"
 #include "ECS/Components/InputCon.h"
 #include "ECS/Components/Transform.h"
+#include "ECS/Components/Camera.h"
 
 #include "ECS/Systems/RenderSystem.h"
 #include "ECS/Systems/MoveSystem.h"
@@ -32,6 +33,7 @@ class Initiate
 
 	public: // Entities
 		ECS::EntityID cube{};
+		ECS::EntityID camera{};
 
 	public: // Systems
 		std::unique_ptr<MoveSystem> ms{};
@@ -62,21 +64,49 @@ class Initiate
 		void CreateAndSetupEntities()
 		{
 			std::cout << "Creating and Setting up entities...\n";
+
+			CreateCubeEntity();
+			CreateCameraEntity();
+
+			std::cout << "Creating and Setting up entities done.\n";
+		}
+
+		void CreateCubeEntity()
+		{
 			cube = em->CreateEntity();
 			em->SetEntityName(cube, "Default Cube");
-			em->AssignComponent<Transform>(cube);
-			em->AssignComponent<MeshComponent>(cube);
+			em->AssignComponent<Components::Transform>(cube);
+			em->AssignComponent<Components::MeshComponent>(cube);
 
-			MeshComponent mc{};
+			Components::MeshComponent mc{};
 			mc.mesh = *new GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
 
-			em->SetComponentValue<Transform>({
+			em->SetComponentValue<Components::Transform>({
 												{10, 5, 3},
 											    {0, 0, 0},
 											    {1, 1, 1}}, cube);
-			em->SetComponentValue<MeshComponent>(mc, cube);
+			em->SetComponentValue<Components::MeshComponent>(mc, cube);
+		}
 
-			std::cout << "Creating and Setting up entities done.\n";
+		void CreateCameraEntity()
+		{
+			camera = em->CreateEntity();
+			em->SetEntityName(camera, "Main Camera");
+			em->AssignComponent<Components::Transform>(camera);
+			em->AssignComponent<Components::Camera>(camera);
+
+			Components::Camera cam
+			{
+				{}, GMath::Vec3f(0, 0, 0), GMath::Vec3f(0, 1, 0),
+				Components::CameraType::PERSPECTIVE,
+				0.1f, 1000.0f, 60, 1
+			};
+
+			em->SetComponentValue<Components::Camera>(cam, camera);
+			em->SetComponentValue<Components::Transform>({
+					                                             {0, 0, -3},
+					                                             {0, 0, 0},
+					                                             {1, 1, 1}}, camera);
 		}
 
 		void CreateAndSetupSystems()
