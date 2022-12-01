@@ -136,14 +136,17 @@ namespace GGraphics
 		   return w2v;
 		}
 
-		static GMath::Mat4f GetOrthographicProjectionMatrix(float nearPlaneDistanceFromCameraOrigin)
+		static GMath::Mat4f GetOrthographicProjectionMatrix(float nearPlane, float farPlane, float viewBoxWidth, float viewBoxHeight)
 		{
-		   GMath::Mat4f transformationMatrix{};
-		   transformationMatrix = GMath::Mat4f::GetIdentityMatrix();
-		   transformationMatrix.mat[2][2] = 0;
-		   transformationMatrix.mat[2][3] = -nearPlaneDistanceFromCameraOrigin;
+		   GMath::Mat4f projectionMatrix{};
 
-		   return transformationMatrix;
+			projectionMatrix = GMath::Mat4f::GetIdentityMatrix();
+			projectionMatrix.mat[0][0] = 1/viewBoxWidth;
+			projectionMatrix.mat[1][1] = 1/viewBoxHeight;
+			projectionMatrix.mat[2][2] = -(2/(nearPlane - farPlane));
+			projectionMatrix.mat[2][3] = -((nearPlane + farPlane)/(nearPlane - farPlane));
+
+		   return projectionMatrix;
 		}
 
 		static GMath::Mat4f GetPerspectiveProjectionMatrix(float nearPlane, float farPlane, float fieldOfView, float aspectRatio)

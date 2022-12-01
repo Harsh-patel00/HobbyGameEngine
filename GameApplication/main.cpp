@@ -82,7 +82,7 @@ class Initiate
 			mc.mesh = *new GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
 
 			em->SetComponentValue<Components::Transform>({
-												{10, 5, 3},
+												{5, 5, 3},
 											    {0, 0, 0},
 											    {1, 1, 1}}, cube);
 			em->SetComponentValue<Components::MeshComponent>(mc, cube);
@@ -98,7 +98,7 @@ class Initiate
 			Components::Camera cam
 			{
 				{}, GMath::Vec3f(0, 0, 0), GMath::Vec3f(0, 1, 0),
-				Components::CameraType::PERSPECTIVE,
+				Components::CameraType::ORTHOGRAPHIC,
 				0.1f, 1000.0f, 60, 1
 			};
 

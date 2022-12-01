@@ -85,6 +85,7 @@ class RenderSystem : ECS::System
 
 			ConvertLocalToWorld(meshCopy, transform);
 			ConvertWorldToView(meshCopy);
+			ConvertViewToProjection(meshCopy);
 
 			std::cout << "Transformed Mesh :: \n";
 
@@ -145,6 +146,40 @@ class RenderSystem : ECS::System
 			mesh.SetTriangles(transformedTris);
 		}
 
+		void ConvertViewToProjection(GGraphics::Mesh &mesh)
+		{
+			std::vector<GGraphics::Primitives2d::Triangle> transformedTris{};
+			for (auto tri : mesh.GetTriangles())
+			{
+				GGraphics::Primitives2d::Triangle transformedTri = tri;
+				for(GMath::Point3f &point : transformedTri.points)
+				{
+					GMath::Mat4f projectionMatrix{};
+					if(_pSceneCamera->type == Components::CameraType::ORTHOGRAPHIC)
+					{
+						projectionMatrix = GGraphics::Transformation::GetOrthographicProjectionMatrix(
+								_pSceneCamera->nearPlane,
+								_pSceneCamera->farPlane,
+								10.f,
+								6.f
+								);
+					}
+					else
+					{
+						projectionMatrix = GGraphics::Transformation::GetPerspectiveProjectionMatrix(
+								_pSceneCamera->nearPlane,
+								_pSceneCamera->farPlane,
+								_pSceneCamera->fieldOfView,
+								_pSceneCamera->aspectRatio );
+					}
+
+
+					point = GMath::Mat4f::Matrix4Vec3Multiplication(point, projectionMatrix);
+				}
+				transformedTris.push_back(transformedTri);
+			}
+			mesh.SetTriangles(transformedTris);
+		}
 };
 
 #endif //GAMEENGINE_RENDERSYSTEM_H
