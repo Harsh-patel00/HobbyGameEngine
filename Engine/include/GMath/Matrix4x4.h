@@ -139,12 +139,16 @@ namespace GMath
 		   // Else operator performs the operation with the instance of this class and other parameter
 		   friend std::ostream &operator<<(std::ostream &os, const Matrix &matrix)
 		   {
+			   os << "\nMatrix :: \n";
 			   for (int i = 0; i < size; i++)
 			   {
+				   os << "[" << i << "]";
 				   for (int j = 0; j < size; j++)
 				   {
-					   os << "\nMatrix[" << i << "][" << j << "] :: " << matrix.mat[i][j];
+					   os << " :: " << matrix.mat[i][j];
 				   }
+
+				   os << "\n";
 			   }
 
 			   return os;

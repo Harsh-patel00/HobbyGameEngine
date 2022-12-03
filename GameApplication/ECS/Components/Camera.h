@@ -2,6 +2,8 @@
 // Created by Harsh on 01/12/2022.
 //
 
+#include "GGraphics/Volumes.h"
+
 namespace Components
 {
 #ifndef GAMEENGINE_CAMERA_H
@@ -23,10 +25,8 @@ namespace Components
 	   // For projection
 	   CameraType type{};
 
-	   float nearPlane{};
-	   float farPlane{};
-	   float fieldOfView{};
-	   float aspectRatio{};
+	   GGraphics::CanonicalViewVolume cvv{};
+	   GGraphics::ViewPort viewport{};
    };
 
 #endif //GAMEENGINE_CAMERA_H

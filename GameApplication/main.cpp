@@ -66,7 +66,6 @@ class Initiate
 			std::cout << "Creating and Setting up entities...\n";
 
 			CreateCubeEntity();
-			CreateCameraEntity();
 
 			std::cout << "Creating and Setting up entities done.\n";
 		}
@@ -82,29 +81,32 @@ class Initiate
 			mc.mesh = *new GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
 
 			em->SetComponentValue<Components::Transform>({
-												{5, 5, 3},
+												{0, 0, 0},
 											    {0, 0, 0},
 											    {1, 1, 1}}, cube);
 			em->SetComponentValue<Components::MeshComponent>(mc, cube);
 		}
 
-		void CreateCameraEntity()
+		void CreateCameraEntity(void* windowRef)
 		{
 			camera = em->CreateEntity();
 			em->SetEntityName(camera, "Main Camera");
 			em->AssignComponent<Components::Transform>(camera);
 			em->AssignComponent<Components::Camera>(camera);
 
+			auto *pWindow = reinterpret_cast<GEngine::EngineWindow*>(windowRef);
+
 			Components::Camera cam
 			{
 				{}, GMath::Vec3f(0, 0, 0), GMath::Vec3f(0, 1, 0),
-				Components::CameraType::ORTHOGRAPHIC,
-				0.1f, 1000.0f, 60, 1
+				Components::CameraType::PERSPECTIVE,
+				{(float)pWindow->GetWidth(), (float)pWindow->GetHeight(), 5.f, 100.f}, // CVV
+				{0, 0, pWindow->GetWidth(), pWindow->GetHeight()} // Viewport
 			};
 
 			em->SetComponentValue<Components::Camera>(cam, camera);
 			em->SetComponentValue<Components::Transform>({
-					                                             {0, 0, -3},
+					                                             {0, 0, -1},
 					                                             {0, 0, 0},
 					                                             {1, 1, 1}}, camera);
 		}
@@ -133,7 +135,10 @@ class Initiate
 				cv.notify_all();
 			});
 
-			EventManager::WindowCreate.AddListener([this](void* windowRef){ CreateRenderSystem(windowRef); });
+			EventManager::WindowCreate.AddListener([this](void* windowRef){
+				CreateCameraEntity(windowRef);
+				CreateRenderSystem(windowRef);
+			});
 
 			EventManager::WindowUpdate.AddListener([this](void* windowRef, double elapsedTime){ UpdateSystems(windowRef, elapsedTime); });
 

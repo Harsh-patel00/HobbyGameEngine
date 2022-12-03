@@ -29,14 +29,14 @@ namespace GGraphics
 			};
 	};
 
-   GMath::Point3f Primitives3d::Cube::A{0, 0, 0};
-   GMath::Point3f Primitives3d::Cube::B{0, 1, 0};
-   GMath::Point3f Primitives3d::Cube::C{1, 1, 0};
-   GMath::Point3f Primitives3d::Cube::D{1, 0, 0};
-   GMath::Point3f Primitives3d::Cube::E{1, 0, 1};
-   GMath::Point3f Primitives3d::Cube::F{1, 1, 1};
-   GMath::Point3f Primitives3d::Cube::G{0, 1, 1};
-   GMath::Point3f Primitives3d::Cube::H{0, 0, 1};
+   GMath::Point3f Primitives3d::Cube::A{-0.5, -0.5, -0.5};
+   GMath::Point3f Primitives3d::Cube::B{-0.5, 0.5, -0.5};
+   GMath::Point3f Primitives3d::Cube::C{0.5, 0.5, -0.5};
+   GMath::Point3f Primitives3d::Cube::D{0.5, -0.5, -0.5};
+   GMath::Point3f Primitives3d::Cube::E{0.5, -0.5, 0.5};
+   GMath::Point3f Primitives3d::Cube::F{0.5, 0.5, 0.5};
+   GMath::Point3f Primitives3d::Cube::G{-0.5, 0.5, 0.5};
+   GMath::Point3f Primitives3d::Cube::H{-0.5, -0.5, 0.5};
 
 	GGraphics::Primitives2d::Triangle Primitives3d::Cube::tris[12]
 	{

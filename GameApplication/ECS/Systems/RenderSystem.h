@@ -22,6 +22,7 @@ class RenderSystem : ECS::System
 	private:
 		GEngine::EngineWindow *pWindow{};
 		Camera *_pSceneCamera{};
+		float rotation, speed = 50;
 	public:
 		explicit RenderSystem(const std::string &name) : System(name){}
 
@@ -42,18 +43,33 @@ class RenderSystem : ECS::System
 				_pSceneCamera->origin = transform->position;
 			}
 
-			for (auto entId : world->GetEcsManager()->EntitiesWithComponents<Transform, MeshComponent>())
+			/*for (auto entId : world->GetEcsManager()->EntitiesWithComponents<Transform, MeshComponent>())
 			{
 				auto transform = world->GetEcsManager()->GetComponent<Transform>(entId);
 				auto meshComp = world->GetEcsManager()->GetComponent<MeshComponent>(entId);
 
 				ProcessMesh(meshComp->mesh, *transform);
-			}
+			}*/
 		}
 
 		void OnUpdate(double dt, GEngine::GameWorld *world) override { }
 
-		void OnUpdate(double dt, GEngine::GameWorld *world, GEngine::EngineWindow *window) { }
+		void OnUpdate(double dt, GEngine::GameWorld *world, GEngine::EngineWindow *window)
+		{
+			rotation += dt * speed;
+			for (auto entId : world->GetEcsManager()->EntitiesWithComponents<Transform, MeshComponent>())
+			{
+				auto transform = world->GetEcsManager()->GetComponent<Transform>(entId);
+				auto meshComp = world->GetEcsManager()->GetComponent<MeshComponent>(entId);
+
+				world->GetEcsManager()->SetComponentValue<Transform>(
+																		{transform->position,
+																	    GMath::Vec3f(rotation, 0, 0),
+																		transform->scale}, entId);
+
+				ProcessMesh(meshComp->mesh, *transform);
+			}
+		}
 
 		static void DrawFullScreenTriangle(GEngine::EngineWindow *window)
 		{
@@ -76,30 +92,30 @@ class RenderSystem : ECS::System
 
 			GGraphics::Mesh meshCopy = mesh;
 
-			std::cout << "Original Mesh :: \n";
+//			std::cout << "Original Mesh :: \n";
 
 			for (auto tri : mesh.GetTriangles())
 			{
-				tri.Print();
+//				tri.Print();
 			}
 
 			ConvertLocalToWorld(meshCopy, transform);
 			ConvertWorldToView(meshCopy);
 			ConvertViewToProjection(meshCopy);
+			ConvertProjectionToViewport(meshCopy);
 
-			std::cout << "Transformed Mesh :: \n";
+//			std::cout << "Transformed Mesh :: \n";
 
 			for (auto tri : meshCopy.GetTriangles())
 			{
-				tri.Print();
+//				tri.Print();
+				tri.Draw(pWindow, GGraphics::Color(GGraphics::ColorEnum::GREEN));
 			}
 
 		}
 
 		void ConvertLocalToWorld(GGraphics::Mesh &mesh, const Transform &transform)
 		{
-			std::cout << "Converting from local to world!...\n";
-
 			std::vector<GGraphics::Primitives2d::Triangle> transformedTris{};
 
 			GMath::Mat4f T = GGraphics::Transformation::GetTranslationMatrix(transform.position);
@@ -107,10 +123,12 @@ class RenderSystem : ECS::System
 			GMath::Mat4f S = GGraphics::Transformation::GetScaleMatrix(transform.scale);
 
 			// Multiplication in order
-			// 1. Scale
-			// 2. Rotate
-			// 3. Translate
-			GMath::Mat4f matL2W =  S * R * T;
+			// 1. Scale (S)
+			// 2. Rotate (R)
+			// 3. Translate (T)
+			GMath::Mat4f matL2W =  T * R * S;
+
+//			std::cout << "matL2W Mat :: " << matL2W << "\n";
 
 			for (auto tri : mesh.GetTriangles())
 			{
@@ -130,15 +148,17 @@ class RenderSystem : ECS::System
 
 		void ConvertWorldToView(GGraphics::Mesh &mesh)
 		{
+			GMath::Mat4f w2v = GGraphics::Transformation::GetWorldToViewMatrix
+					(_pSceneCamera->origin, _pSceneCamera->lookAt, _pSceneCamera->upDirection);
+
+//			std::cout << "w2v Mat :: " << w2v << "\n";
+
 			std::vector<GGraphics::Primitives2d::Triangle> transformedTris{};
 			for (auto tri : mesh.GetTriangles())
 			{
 				GGraphics::Primitives2d::Triangle transformedTri = tri;
 				for(GMath::Point3f &point : transformedTri.points)
 				{
-					GMath::Mat4f w2v = GGraphics::Transformation::GetWorldToViewMatrix
-							(_pSceneCamera->origin, _pSceneCamera->lookAt, _pSceneCamera->upDirection);
-
 					point = GMath::Mat4f::Matrix4Vec3Multiplication(point, w2v);
 				}
 				transformedTris.push_back(transformedTri);
@@ -149,32 +169,43 @@ class RenderSystem : ECS::System
 		void ConvertViewToProjection(GGraphics::Mesh &mesh)
 		{
 			std::vector<GGraphics::Primitives2d::Triangle> transformedTris{};
+
+			GMath::Mat4f projectionMatrix{};
+			if(_pSceneCamera->type == Components::CameraType::ORTHOGRAPHIC)
+			{
+				projectionMatrix = GGraphics::Transformation::GetOrthographicProjectionMatrix(_pSceneCamera->cvv);
+			}
+			else
+			{
+				projectionMatrix = GGraphics::Transformation::GetPerspectiveProjectionMatrix(_pSceneCamera->cvv);
+			}
+
 			for (auto tri : mesh.GetTriangles())
 			{
 				GGraphics::Primitives2d::Triangle transformedTri = tri;
-				for(GMath::Point3f &point : transformedTri.points)
+				for (GMath::Point3f &point: transformedTri.points)
 				{
-					GMath::Mat4f projectionMatrix{};
-					if(_pSceneCamera->type == Components::CameraType::ORTHOGRAPHIC)
-					{
-						projectionMatrix = GGraphics::Transformation::GetOrthographicProjectionMatrix(
-								_pSceneCamera->nearPlane,
-								_pSceneCamera->farPlane,
-								10.f,
-								6.f
-								);
-					}
-					else
-					{
-						projectionMatrix = GGraphics::Transformation::GetPerspectiveProjectionMatrix(
-								_pSceneCamera->nearPlane,
-								_pSceneCamera->farPlane,
-								_pSceneCamera->fieldOfView,
-								_pSceneCamera->aspectRatio );
-					}
-
-
 					point = GMath::Mat4f::Matrix4Vec3Multiplication(point, projectionMatrix);
+				}
+				transformedTris.push_back(transformedTri);
+			}
+			mesh.SetTriangles(transformedTris);
+		}
+
+		void ConvertProjectionToViewport(GGraphics::Mesh &mesh)
+		{
+			std::vector<GGraphics::Primitives2d::Triangle> transformedTris{};
+			for (auto tri : mesh.GetTriangles())
+			{
+				GGraphics::Primitives2d::Triangle transformedTri = tri;
+				for (GMath::Point3f &point: transformedTri.points)
+				{
+					// Discard any point outside cvv
+					if (point.x < -1 || point.x > 1 || point.y < -1 || point.y > 1) continue;
+
+					// convert to raster space and mark the position of the vertex in the image with a simple dot
+					point.x = (uint32_t)((point.x + 1) * 0.5 * _pSceneCamera->viewport.width);
+					point.y = (uint32_t)((point.y + 1) * 0.5 * _pSceneCamera->viewport.height);
 				}
 				transformedTris.push_back(transformedTri);
 			}
