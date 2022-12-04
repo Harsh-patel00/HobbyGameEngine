@@ -7,6 +7,8 @@
 #ifndef GAMEENGINE_PRIMITIVE3D_H
 #define GAMEENGINE_PRIMITIVE3D_H
 
+using GMath::Point3f;
+
 namespace GGraphics
 {
 	class Primitives3d
@@ -60,9 +62,9 @@ namespace GGraphics
 			{B, G, F},
 			{B, F, C},
 
-			// Bottom (AHE, AED)
-			{A, H, E},
-			{A, E, D},
+			// Bottom (HED, HDA)
+			{H, E, D},
+			{H, D, A},
 	};
 }
 

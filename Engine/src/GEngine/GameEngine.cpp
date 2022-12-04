@@ -13,18 +13,19 @@ void GEngine::GameEngine::Init()
 {
 	std::cout << "Initializing Game Engine...\n";
 	_world = std::make_unique<GameWorld>();
-
-	CreateWindowOnSeparateThread();
 }
 
-void GEngine::GameEngine::CreateWindowOnSeparateThread()
+void GEngine::GameEngine::CreateEngineWindow(int windowWidth, int windowHeight, std::string windowTitle)
 {
-	_windowThread = std::thread([this](){
+	_windowThread = std::thread([this, &windowWidth, &windowHeight, &windowTitle](){
 
 		std::cout << "\nCreating a window...\n";
 
 		_windowMutex.lock();
-		_window = std::make_unique<EngineWindow>(800, 400, "Gagged Engine"); // Limit this height to 768 (Max pixels height on the device)
+
+		// Limit height to 768 (Max pixels height on the device)
+		_window = std::make_unique<EngineWindow>(windowWidth, windowHeight, windowTitle);
+
 		_windowMutex.unlock();
 	});
 
@@ -43,9 +44,4 @@ GEngine::GameEngine::~GameEngine()
 {
 	// std::cout << "GameEngine Destructor...\n";
 	_world.reset();
-}
-
-GEngine::EngineWindow *GEngine::GameEngine::GetEngineWindow()
-{
-	return _window.get();
 }

@@ -18,9 +18,8 @@ class MoveSystem : ECS::System
 		explicit MoveSystem(const std::string &name) : System(name){}
 
 	public:
-		void OnCreate(GEngine::GameWorld *world) override
+		void OnCreate(GEngine::GameWorld *world, GEngine::EngineWindow *window) override
 		{
-			ECS::System::OnCreate(world);
 //			std::cout << "Overridden OnCreate...\n";
 
 //			EventManager::RightKeyPressed.AddListener(MoveRight);

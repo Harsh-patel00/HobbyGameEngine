@@ -33,11 +33,10 @@ namespace GEngine
 		public:
 			// Helper function to get reference to GameWorld
 			GameWorld* GetGameWorld();
-			GEngine::EngineWindow *GetEngineWindow();
+			void CreateEngineWindow(int windowWidth, int windowHeight, std::string windowTitle);
 
 		private:
 			void Init();
-			void CreateWindowOnSeparateThread();
 	};
 #endif //GAMEENGINE_GAMEENGINE_H
 }

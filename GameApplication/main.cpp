@@ -2,17 +2,14 @@
 
 // User-defined header files
 #include "GEngine/GameEngine.h"
-#include "GEngine/GWindow/EngineWindow.h"
 
 #include "ECS/Components/MeshComponent.h"
 #include "ECS/Components/InputCon.h"
 #include "ECS/Components/Transform.h"
-#include "ECS/Components/Camera.h"
 
 #include "ECS/Systems/RenderSystem.h"
 #include "ECS/Systems/MoveSystem.h"
 #include "ECS/Systems/InputSystem.h"
-#include "GMath/Matrix4x4.h"
 
 bool isGameOver = false;
 std::condition_variable cv;
@@ -29,11 +26,9 @@ class Initiate
 		GEngine::GameEngine engine{};
 		GEngine::GameWorld *world{};
 		ECS::EcsManager *em{};
-		GEngine::EngineWindow *window{};
 
 	public: // Entities
 		ECS::EntityID cube{};
-		ECS::EntityID camera{};
 
 	public: // Systems
 		std::unique_ptr<MoveSystem> ms{};
@@ -49,14 +44,11 @@ class Initiate
 	public:
 		void Init()
 		{
-			using namespace std::chrono_literals;
-
 			world = engine.GetGameWorld();
 			em = world->GetEcsManager();
-			window = engine.GetEngineWindow();
+			engine.CreateEngineWindow(800, 600, "GaggedEngine");
 
 			CreateAndSetupEntities();
-			CreateAndSetupSystems();
 
 			SetListener();
 		}
@@ -87,42 +79,14 @@ class Initiate
 			em->SetComponentValue<Components::MeshComponent>(mc, cube);
 		}
 
-		void CreateCameraEntity(void* windowRef)
+		void CreateAndSetupSystems(void* windowRef)
 		{
-			camera = em->CreateEntity();
-			em->SetEntityName(camera, "Main Camera");
-			em->AssignComponent<Components::Transform>(camera);
-			em->AssignComponent<Components::Camera>(camera);
-
 			auto *pWindow = reinterpret_cast<GEngine::EngineWindow*>(windowRef);
 
-			Components::Camera cam
-			{
-				{}, GMath::Vec3f(0, 0, 0), GMath::Vec3f(0, 1, 0),
-				Components::CameraType::PERSPECTIVE,
-				{(float)pWindow->GetWidth(), (float)pWindow->GetHeight(), 5.f, 100.f}, // CVV
-				{0, 0, pWindow->GetWidth(), pWindow->GetHeight()} // Viewport
-			};
-
-			em->SetComponentValue<Components::Camera>(cam, camera);
-			em->SetComponentValue<Components::Transform>({
-					                                             {0, 0, -1},
-					                                             {0, 0, 0},
-					                                             {1, 1, 1}}, camera);
-		}
-
-		void CreateAndSetupSystems()
-		{
 			ms = std::make_unique<MoveSystem>("Move");
-			ms->OnCreate(world);
-		}
+			ms->OnCreate(world, pWindow);
 
-		void CreateRenderSystem(void* windowRef)
-		{
 			rs = std::make_unique<RenderSystem>("Render");
-
-			auto *pWindow = reinterpret_cast<GEngine::EngineWindow*>(windowRef);
-
 			rs->OnCreate(world, pWindow);
 		}
 
@@ -135,24 +99,18 @@ class Initiate
 				cv.notify_all();
 			});
 
-			EventManager::WindowCreate.AddListener([this](void* windowRef){
-				CreateCameraEntity(windowRef);
-				CreateRenderSystem(windowRef);
-			});
+			EventManager::WindowCreate.AddListener([this](void* windowRef){ CreateAndSetupSystems(windowRef); });
 
-			EventManager::WindowUpdate.AddListener([this](void* windowRef, double elapsedTime){ UpdateSystems(windowRef, elapsedTime); });
-
+			EventManager::WindowUpdate.AddListener([this](double elapsedTime){ UpdateSystems(elapsedTime); });
 		}
 
-		void UpdateSystems(void* windowRef, double elapsedTime)
+		void UpdateSystems(double elapsedTime) const
 		{
 			ms->OnUpdate(elapsedTime, world);
 
-			auto *pWindow = reinterpret_cast<GEngine::EngineWindow*>(windowRef);
-
 			// Render System
 			// Always call at last so that every thing is rendered
-			rs->OnUpdate(elapsedTime, world, pWindow);
+			rs->OnUpdate(elapsedTime, world);
 		}
 };
 

@@ -6,7 +6,7 @@
 #include "GEngine/GWindow/EngineWindow.h"
 
 Action<> EventManager::QuitGame{};
-Action<void*, double> EventManager::WindowUpdate{};
+Action<double> EventManager::WindowUpdate{};
 Action<void*> EventManager::WindowCreate{};
 
 GEngine::LRESULT GEngine::EngineWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -105,7 +105,7 @@ void GEngine::EngineWindow::OnUpdate()
 	ClearBg();
 
 	// Every frame should be drawn here!
-	EventManager::NotifyWindowUpdate(this, _elapsedTime.count());
+	EventManager::NotifyWindowUpdate(_elapsedTime.count());
 
 	SwapBuffers();
 	auto end = std::chrono::high_resolution_clock::now();

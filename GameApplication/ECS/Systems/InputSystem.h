@@ -142,9 +142,9 @@ class InputSystem : ECS::System
 		}
 		*/
 	public:
-		void OnCreate(GEngine::GameWorld *world) override
+		void OnCreate(GEngine::GameWorld *world, GEngine::EngineWindow *window) override
 		{
-			ECS::System::OnCreate(world);
+			ECS::System::OnCreate(world, window);
 //			std::cout << "Overridden OnCreate...\n";
 		}
 

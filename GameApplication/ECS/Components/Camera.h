@@ -19,8 +19,8 @@ namespace Components
    {
 	   // For view coordinate system
 	   GMath::Vec3f  origin{}; // Place of the camera
-	   GMath::Vec3f  lookAt{}; // Point to look at from the camera
-	   GMath::Vec3f  upDirection{}; // Point to look at from the camera
+	   GMath::Vec3f  lookAt{}; // Point3 to look at from the camera
+	   GMath::Vec3f  upDirection{}; // Point3 to look at from the camera
 
 	   // For projection
 	   CameraType type{};

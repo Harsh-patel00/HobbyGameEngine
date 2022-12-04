@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "GEngine/GameWorld.h"
+#include "GEngine/GWindow/EngineWindow.h"
 
 namespace ECS
 {
@@ -25,7 +26,7 @@ namespace ECS
 		   // so this is the way to get access to entities
 
 		   // This function is called when the system is created
-		   virtual void OnCreate(GEngine::GameWorld *world);
+		   virtual void OnCreate(GEngine::GameWorld *world, GEngine::EngineWindow *window) = 0;
 		   // This is a pure virtual function, which runs every frame
 		   virtual void OnUpdate(double dt, GEngine::GameWorld *world) = 0;
    };

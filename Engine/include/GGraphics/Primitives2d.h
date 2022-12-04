@@ -6,10 +6,12 @@
 
 #include "Color.h"
 #include "GEngine/GWindow/EngineWindow.h"
-#include "GMath/Point.h"
+#include "GMath/GMath.h"
 
 #ifndef GAMEENGINE_PRIMITIVES2D_H
 #define GAMEENGINE_PRIMITIVES2D_H
+
+using GMath::Point3f;
 
 namespace GGraphics
 {
@@ -18,12 +20,12 @@ namespace GGraphics
 	   public:
 		   struct Line
 		   {
-				   GMath::Point3f start{};
-				   GMath::Point3f end{};
+				   Point3f start{};
+				   Point3f end{};
 
 				   Line() = default;
 
-				   Line(GMath::Point3f startPoint, GMath::Point3f endPoint, GEngine::EngineWindow *window, Color lineColor) :
+				   Line(Point3f startPoint, Point3f endPoint, GEngine::EngineWindow *window, Color lineColor) :
 						   start(startPoint), end(endPoint), pDrawWindow(window), color(lineColor) {}
 
 				   void Draw()
@@ -204,10 +206,10 @@ namespace GGraphics
 		   };
 		   struct Triangle
 		   {
-			   GMath::Point3f points[3] {}; // This array will contain 3 points
+			   Point3f points[3] {}; // This array will contain 3 points
 
 			   Triangle() = default;
-			   Triangle(GMath::Point3f p1, GMath::Point3f p2, GMath::Point3f p3)
+			   Triangle(Point3f p1, Point3f p2, Point3f p3)
 			   {
 				   points[0] = p1;
 				   points[1] = p2;
@@ -223,9 +225,9 @@ namespace GGraphics
 
 			   void Print()
 			   {
-				   std::cout << "Point[0] :: " << points[0] << "\n";
-				   std::cout << "Point[1] :: " << points[1] << "\n";
-				   std::cout << "Point[2] :: " << points[2] << "\n";
+				   std::cout << "Point3[0] :: " << points[0] << "\n";
+				   std::cout << "Point3[1] :: " << points[1] << "\n";
+				   std::cout << "Point3[2] :: " << points[2] << "\n";
 			   }
 		   };
    };

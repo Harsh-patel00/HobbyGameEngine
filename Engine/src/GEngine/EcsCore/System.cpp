@@ -19,7 +19,3 @@ ECS::System::~System()
 
 }
 
-void ECS::System::OnCreate(GEngine::GameWorld *world)
-{
-//	std::cout << "Base OnCreate\n";
-}

@@ -2,7 +2,7 @@
 // Created by Harsh on 23-01-2022.
 //
 
-#include "GMath/Vector.h"
+#include "GMath/Vector3.h"
 
 namespace Components
 {

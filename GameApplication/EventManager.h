@@ -18,7 +18,7 @@ class EventManager
 		static Action<> QuitGame;
 
 		// Window update will pass a reference to itself
-		static Action<void*, double> WindowUpdate;
+		static Action<double> WindowUpdate;
 		static Action<void*> WindowCreate;
 
 	public:
@@ -28,10 +28,10 @@ class EventManager
 			QuitGame.Invoke("WindowClosed");
 		}
 
-		void static NotifyWindowUpdate(void* windowRef, double elapsedTime)
+		void static NotifyWindowUpdate(double elapsedTime)
 		{
 			if(!WindowUpdate.IsEmpty())
-				WindowUpdate.Invoke(windowRef, elapsedTime, "WindowUpdate");
+				WindowUpdate.Invoke(elapsedTime, "WindowUpdate");
 		}
 
 		void static NotifyWindowCreate(void* windowRef)
