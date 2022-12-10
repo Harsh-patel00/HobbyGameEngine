@@ -27,6 +27,10 @@ namespace Components
 
 	   GGraphics::CanonicalViewVolume cvv{};
 	   GGraphics::ViewPort viewport{};
+	   // Orthogonal
+	   float size{};
+	   // Perspective
+	   float fov{};
    };
 
 #endif //GAMEENGINE_CAMERA_H

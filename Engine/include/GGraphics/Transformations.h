@@ -4,6 +4,7 @@
 
 #include "GMath/GMath.h"
 #include "Volumes.h"
+#include "ECS/Components/Camera.h"
 
 #ifndef GAMEENGINE_TRANSFORMATIONS_H
 #define GAMEENGINE_TRANSFORMATIONS_H
@@ -70,8 +71,8 @@ namespace GGraphics
 		{
 		   Mat4f rotationX = Mat4f::GetIdentityMatrix();
 		   rotationX[1][1] = std::cos(DEG2RAD(rotationAngleInXAxis));
-		   rotationX[1][2] = std::sin(DEG2RAD(rotationAngleInXAxis));
-		   rotationX[2][1] = -std::sin(DEG2RAD(rotationAngleInXAxis));
+		   rotationX[1][2] = -std::sin(DEG2RAD(rotationAngleInXAxis));
+		   rotationX[2][1] = std::sin(DEG2RAD(rotationAngleInXAxis));
 		   rotationX[2][2] = std::cos(DEG2RAD(rotationAngleInXAxis));
 
 		   return rotationX;
@@ -82,8 +83,8 @@ namespace GGraphics
 		{
 		   Mat4f rotationY = Mat4f::GetIdentityMatrix();
 		   rotationY[0][0] = std::cos(DEG2RAD(rotationAngleInYAxis));
-		   rotationY[0][2] = -std::sin(DEG2RAD(rotationAngleInYAxis));
-		   rotationY[2][0] = std::sin(DEG2RAD(rotationAngleInYAxis));
+		   rotationY[0][2] = std::sin(DEG2RAD(rotationAngleInYAxis));
+		   rotationY[2][0] = -std::sin(DEG2RAD(rotationAngleInYAxis));
 		   rotationY[2][2] = std::cos(DEG2RAD(rotationAngleInYAxis));
 
 		   return rotationY;
@@ -94,8 +95,8 @@ namespace GGraphics
 		{
 		   Mat4f rotationZ = Mat4f::GetIdentityMatrix();
 		   rotationZ[0][0] = std::cos(DEG2RAD(rotationAngleInZAxis));
-		   rotationZ[0][1] = std::sin(DEG2RAD(rotationAngleInZAxis));
-		   rotationZ[1][0] = -std::sin(DEG2RAD(rotationAngleInZAxis));
+		   rotationZ[0][1] = -std::sin(DEG2RAD(rotationAngleInZAxis));
+		   rotationZ[1][0] = std::sin(DEG2RAD(rotationAngleInZAxis));
 		   rotationZ[1][1] = std::cos(DEG2RAD(rotationAngleInZAxis));
 
 		   return rotationZ;
@@ -119,9 +120,9 @@ namespace GGraphics
 		static Mat4f GetWorldToViewMatrix(Vec3f origin, Vec3f lookAtPoint, Vec3f upDirection)
 		{
 			// Setup view coordinate system
-			Vec3f n = (lookAtPoint - origin).Normalize();
-			Vec3f u = (upDirection.Cross(n)).Normalize();
-			Vec3f v = n.Cross(u);
+			Vec3f n = (origin - lookAtPoint).Normalize();
+			Vec3f u = (n.Cross(upDirection)).Normalize();
+			Vec3f v = u.Cross(n);
 
 			Mat4f w2v = Mat4f::GetIdentityMatrix();
 
@@ -143,32 +144,78 @@ namespace GGraphics
 			return w2v;
 		}
 
-		static Mat4f GetOrthographicProjectionMatrix(GGraphics::CanonicalViewVolume cvv)
-		   {
-				if(cvv.nearDist >= cvv.farDist || cvv.farDist <= cvv.nearDist)
-					cvv.farDist = cvv.nearDist + 0.01f;
-
-			   Mat4f projectionMatrix{};
-
-			   projectionMatrix = Mat4f::GetIdentityMatrix();
-				projectionMatrix[0][0] = 2 / cvv.width;
-				projectionMatrix[1][1] = 2 / cvv.height;
-				projectionMatrix[2][2] = 2 / (cvv.farDist - cvv.nearDist);
-				projectionMatrix[2][3] = (cvv.farDist + cvv.nearDist) / (cvv.farDist - cvv.nearDist);
-
-			   return projectionMatrix;
-		   }
-
-		static Mat4f GetPerspectiveProjectionMatrix(GGraphics::CanonicalViewVolume cvv)
+		static Mat4f GetProjectionMatrix(const Components::Camera &camera)
 		{
-		   Mat4f projectionMatrix{0};
-		   projectionMatrix[0][0] = (2 * cvv.nearDist) / cvv.width;
-		   projectionMatrix[1][1] = (2 * cvv.nearDist) / cvv.height;
-		   projectionMatrix[2][2] = ((cvv.nearDist + cvv.farDist) / (cvv.nearDist - cvv.farDist));
-		   projectionMatrix[2][3] = ((2 * cvv.nearDist * cvv.farDist) / (cvv.nearDist - cvv.farDist));
-		   projectionMatrix[3][2] = 1;
+			float l = camera.origin.x - (camera.cvv.width / 2);
+			float r = camera.origin.x + (camera.cvv.width / 2);
+			float b = camera.origin.y - (camera.cvv.height / 2);
+			float t = camera.origin.y + (camera.cvv.height / 2);
+			float n{};
+			float f{};
+			float size = camera.size;
 
-		   return projectionMatrix;
+			if(camera.cvv.nearDist == 0)
+			{
+				 n = 0.1f;
+			}
+			else
+			{
+				n = camera.cvv.nearDist;
+			}
+
+			if(camera.cvv.farDist <= n)
+			{
+				f = n + 0.1f;
+			}
+			else
+			{
+				f = camera.cvv.farDist;
+			}
+
+			// ------------- PERSPECTIVE PROJECTION SPECIFIC---------------------
+
+			float a = camera.cvv.width / camera.cvv.height;
+			float fov = camera.fov; // horizontal fov
+			float s = n * std::tan(DEG2RAD(fov/2));
+
+			Mat4f projectionMatrix{};
+			switch (camera.type)
+			{
+				case Components::CameraType::ORTHOGRAPHIC:
+				{
+					projectionMatrix[0][0] = (1/a) / size;
+
+					projectionMatrix[1][1] = 1/size;
+
+					projectionMatrix[2][2] = -2 / (f - n);
+					projectionMatrix[2][3] = -((f + n) / (f - n));
+
+					projectionMatrix[3][3] = 1;
+					return projectionMatrix;
+				}
+				case Components::CameraType::PERSPECTIVE:
+				{
+					t = camera.origin.y + (s / a);
+					b = camera.origin.y - (s / a);
+					r = camera.origin.x + s;
+					l = camera.origin.x - s;
+
+					projectionMatrix[0][0] = 2 * n / (r - l);
+
+					projectionMatrix[1][1] = 2 * n / (t - b);
+
+					projectionMatrix[2][2] = - (f + n) / (f - n);
+					projectionMatrix[2][3] = - 2 * f * n / (f - n);
+
+					projectionMatrix[3][2] = -1;
+					projectionMatrix[3][3] = 0;
+
+					return projectionMatrix;
+				}
+				default:
+					projectionMatrix = -1;
+					return projectionMatrix;
+			}
 		}
 
 		#pragma endregion

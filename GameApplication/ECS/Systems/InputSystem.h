@@ -132,12 +132,6 @@ class InputSystem : ECS::System
 
 //					EventManager::NotifyLeftKeyPressed(8);
 				}
-
-				if(char(toupper(getch())) == 'G')
-				{
-					std::cout << "Adding myfunc as listener...\n";
-					EventManager::TestAction2.AddListener(MyFunc2);
-				}
 			}
 		}
 		*/

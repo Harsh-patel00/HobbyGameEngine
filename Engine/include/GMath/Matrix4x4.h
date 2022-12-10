@@ -125,6 +125,8 @@ struct Matrix4x4
 			Point4<T>intermediateResult = (*this) * p3ToP4;
 			Point3<T> finalRes;
 
+			// TODO: Perform clipping operations here on 'intermediateResult', i.e before dividing by w
+
 			if(intermediateResult.w != 0 && intermediateResult.w != 1)
 			{
 				finalRes = {
@@ -140,6 +142,18 @@ struct Matrix4x4
 
 
 			return finalRes;
+		}
+
+		// Sets all elements of the matrix to the value on right of '='
+		void operator=(const T &value)
+		{
+			for (int i = 0; i < 4; ++i)
+			{
+				for (int j = 0; j < 4; ++j)
+				{
+					(*this)[i][j] = value;
+				}
+			}
 		}
 
 		void operator*=(const Matrix4x4 &matrix)

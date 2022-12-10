@@ -45,31 +45,46 @@ class RenderSystem : ECS::System
 
 		void OnUpdate(double dt, GEngine::GameWorld *world) override
 		{
-			rotation += (float)dt * speed;
-			for (auto entId : world->GetEcsManager()->EntitiesWithComponents<Transform, MeshComponent>())
+			rotation += (float) dt * speed;
+
+			if(rotation > 359)
+				rotation = 0;
+
+			int entCount = 1;
+			for (auto entId: world->GetEcsManager()->EntitiesWithComponents<Transform, MeshComponent>())
 			{
 				auto transform = world->GetEcsManager()->GetComponent<Transform>(entId);
 				auto meshComp = world->GetEcsManager()->GetComponent<MeshComponent>(entId);
 
+				Vec3f rotVec;
+
+				if(entCount % 2 == 0)
+				{
+					rotVec = Vec3f(0, rotation, 0);
+				}
+				else if(entCount % 3 == 0)
+				{
+					rotVec = Vec3f(0, 0, rotation);
+				}
+				else
+				{
+					rotVec = Vec3f(rotation, 0, 0);
+				}
+
+				if(entCount == 4)
+				{
+					rotVec = Vec3f(rotation, rotation, rotation);
+				}
+
 				world->GetEcsManager()->SetComponentValue<Transform>(
 						{transform->position,
-						 Vec3f(0, rotation, 0),
+						 rotVec,
 						 transform->scale}, entId);
 
 				ProcessMesh(meshComp->mesh, *transform);
+
+				entCount++;
 			}
-		}
-
-		static void DrawFullScreenTriangle(GEngine::EngineWindow *window)
-		{
-			GGraphics::Primitives2d::Triangle t
-					{
-							{((float) window->GetWidth() / 2) - 100, ((float) window->GetHeight() / 2) - 100, 0},
-							{(float) window->GetWidth() / 2,         ((float) window->GetHeight() / 2) + 100, 0},
-							{((float) window->GetWidth() / 2) + 100, ((float) window->GetHeight() / 2) - 100, 0}
-					};
-
-			t.Draw(window, GGraphics::Color(GGraphics::ColorEnum::CYAN));
 		}
 
 		void ProcessMesh(const GGraphics::Mesh& mesh, const Transform &transform)
@@ -157,17 +172,12 @@ class RenderSystem : ECS::System
 
 		void ConvertViewToProjection(GGraphics::Mesh &mesh)
 		{
+//			std::cout << "View >> Proj\n";
 			std::vector<GGraphics::Primitives2d::Triangle> transformedTris{};
 
-			Mat4f projectionMatrix{};
-			if(_sceneCamera.type == Components::CameraType::ORTHOGRAPHIC)
-			{
-				projectionMatrix = GGraphics::Transformation::GetOrthographicProjectionMatrix(_sceneCamera.cvv);
-			}
-			else
-			{
-				projectionMatrix = GGraphics::Transformation::GetPerspectiveProjectionMatrix(_sceneCamera.cvv);
-			}
+			Mat4f projectionMatrix = GGraphics::Transformation::GetProjectionMatrix(_sceneCamera);
+
+//			std::cout << "v2P Mat :: " << projectionMatrix << "\n";
 
 			for (auto tri : mesh.GetTriangles())
 			{
@@ -183,6 +193,7 @@ class RenderSystem : ECS::System
 
 		void ConvertProjectionToViewport(GGraphics::Mesh &mesh)
 		{
+//			std::cout << "Proj >> Viewport \n";
 			std::vector<GGraphics::Primitives2d::Triangle> transformedTris{};
 			for (auto tri : mesh.GetTriangles())
 			{
@@ -203,13 +214,17 @@ class RenderSystem : ECS::System
 
 		void SetupSceneCamera(Camera &camera)
 		{
-			camera.origin = {1, 1, -1};
+			camera.origin = {0, 5, -10};
 			camera.lookAt = Vec3f(0, 0, 0);
 			camera.upDirection = Vec3f(0, 1, 0);
 
 			camera.type = Components::CameraType::PERSPECTIVE;
-			camera.cvv = {(float)pWindow->GetWidth(), (float)pWindow->GetHeight(), 500.f, 100.f};
+
 			camera.viewport = {0, 0, pWindow->GetWidth(), pWindow->GetHeight()};
+			camera.cvv = {(float)camera.viewport.width, (float)camera.viewport.height, 5, 15};
+
+			camera.size = 1;
+			camera.fov = 60;
 		}
 };
 
