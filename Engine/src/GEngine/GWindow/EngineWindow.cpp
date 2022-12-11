@@ -5,9 +5,15 @@
 #include <iostream>
 #include "GEngine/GWindow/EngineWindow.h"
 
-Action<> EventManager::QuitGame{};
-Action<double> EventManager::WindowUpdate{};
-Action<void*> EventManager::WindowCreate{};
+Action<void*> Events::EngineEventManager::WindowCreate{};
+Action<double> Events::EngineEventManager::WindowUpdate{};
+Action<unsigned int> Events::EngineEventManager::KeyboardHit{};
+Action<> Events::EngineEventManager::WindowResized{};
+Action<> Events::EngineEventManager::WindowClosed{};
+
+bool isKeyPressed = false;
+bool isKeyHold = false;
+bool isKeyUp = false;
 
 GEngine::LRESULT GEngine::EngineWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -15,7 +21,7 @@ GEngine::LRESULT GEngine::EngineWindow::HandleMessage(UINT uMsg, WPARAM wParam, 
 	{
 		case WM_DESTROY:
 			std::cout << "Window is Destroyed!!\nStop the execution of the program...\n";
-			EventManager::NotifyQuitGame();
+			Events::EngineEventManager::NotifyWindowClose();
 			_isWindowClosed = true;
 			PostQuitMessage(0);
 			return 0;
@@ -33,6 +39,19 @@ GEngine::LRESULT GEngine::EngineWindow::HandleMessage(UINT uMsg, WPARAM wParam, 
 
 			return 0;
 		}
+
+		case WM_KEYDOWN:
+			if(!isKeyHold)
+			{
+				isKeyPressed = true;
+			}
+			return 0;
+
+		case WM_KEYUP:
+			isKeyUp = true;
+			isKeyPressed = false;
+			isKeyHold = false;
+			return 0;
 
 		default:
 			return DefWindowProc(m_hwnd, uMsg, wParam, lParam);
@@ -65,7 +84,7 @@ GEngine::EngineWindow::EngineWindow(int windowWidth, int windowHeight, std::stri
 	AllocateBitMapInfo();
 	_hdc = GEngine::GetDC(Window());
 
-	EventManager::NotifyWindowCreate(this);
+	Events::EngineEventManager::NotifyWindowCreate(this);
 
 	Show();
 }
@@ -105,7 +124,7 @@ void GEngine::EngineWindow::OnUpdate()
 	ClearBg();
 
 	// Every frame should be drawn here!
-	EventManager::NotifyWindowUpdate(_elapsedTime.count());
+	Events::EngineEventManager::NotifyWindowUpdate(_elapsedTime.count());
 
 	SwapBuffers();
 	auto end = std::chrono::high_resolution_clock::now();
@@ -258,9 +277,45 @@ void GEngine::EngineWindow::HandleWindowResize(int newWidth, int newHeight)
 	AllocateBuffer(_frameBuffer02);
 
 	AllocateBitMapInfo();
+
+	Events::EngineEventManager::NotifyWindowResize();
 }
 
 double GEngine::EngineWindow::GetDeltaTime() const
 {
 	return _elapsedTime.count();
+}
+
+bool GEngine::EngineWindow::GetKeyDown(Utilities::KeyCode key)
+{
+	if(!isKeyHold && isKeyPressed && (GEngine::GetKeyState((int)key) & 0x8000))
+	{
+		isKeyPressed = false;
+		isKeyHold = true;
+		return true;
+	}
+
+	return false;
+}
+
+bool GEngine::EngineWindow::GetKey(Utilities::KeyCode key)
+{
+	if(GEngine::GetKeyState((int)key) & 0x8000)
+	{
+		isKeyHold = true;
+		return true;
+	}
+
+	return false;
+}
+
+bool GEngine::EngineWindow::GetKeyUp(Utilities::KeyCode key)
+{
+	if(isKeyUp && !(GEngine::GetKeyState((int)key) & 0x8000))
+	{
+		isKeyUp = false;
+		return true;
+	}
+
+	return false;
 }

@@ -34,6 +34,7 @@ class Initiate
 		ECS::EntityID cube4{};
 
 	public: // Systems
+		std::unique_ptr<InputSystem> is{};
 		std::unique_ptr<MoveSystem> ms{};
 		std::unique_ptr<RenderSystem> rs{};
 
@@ -91,6 +92,7 @@ class Initiate
 			em->SetEntityName(cube2, "Default Cube");
 			em->AssignComponent<Components::Transform>(cube2);
 			em->AssignComponent<Components::MeshComponent>(cube2);
+			em->AssignComponentAndSetDefaultValues<Components::InputControl>(cube2);
 
 			Components::MeshComponent mc{};
 			mc.mesh = *new GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
@@ -140,6 +142,9 @@ class Initiate
 		{
 			auto *pWindow = reinterpret_cast<GEngine::EngineWindow*>(windowRef);
 
+			is = std::make_unique<InputSystem>("Input");
+			is->OnCreate(world, pWindow);
+
 			ms = std::make_unique<MoveSystem>("Move");
 			ms->OnCreate(world, pWindow);
 
@@ -151,18 +156,20 @@ class Initiate
 		{
 			std::cout << "Setting up listeners...\n";
 
-			EventManager::QuitGame.AddListener([](){
+			Events::EngineEventManager::WindowClosed.AddListener([](){
 				isGameOver = true;
 				cv.notify_all();
 			});
 
-			EventManager::WindowCreate.AddListener([this](void* windowRef){ CreateAndSetupSystems(windowRef); });
+			Events::EngineEventManager::WindowCreate.AddListener([this](void* windowRef){ CreateAndSetupSystems(windowRef); });
 
-			EventManager::WindowUpdate.AddListener([this](double elapsedTime){ UpdateSystems(elapsedTime); });
+			Events::EngineEventManager::WindowUpdate.AddListener([this](double elapsedTime){ UpdateSystems(elapsedTime); });
 		}
 
 		void UpdateSystems(double elapsedTime) const
 		{
+			is->OnUpdate(elapsedTime, world);
+
 			ms->OnUpdate(elapsedTime, world);
 
 			// Render System

@@ -22,7 +22,8 @@
 
 #include "BaseWindow.h"
 #include "GGraphics/Color.h"
-#include "../../GameApplication/EventManager.h"
+#include "Utilities/EngineEventManager.h"
+#include "Utilities/VirtualKeys.h"
 
 namespace GEngine
 {
@@ -55,6 +56,10 @@ namespace GEngine
 
 		   void DrawPixel(int x, int y, GGraphics::Color = GGraphics::Color(GGraphics::ColorEnum::WHITE));
 		   double GetDeltaTime() const;
+		   bool GetKey(Utilities::KeyCode key);
+		   bool GetKeyDown(Utilities::KeyCode key);
+		   bool GetKeyUp(Utilities::KeyCode key);
+
 
 	   private:
 		   void Show();

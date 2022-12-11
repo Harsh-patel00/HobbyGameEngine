@@ -7,7 +7,6 @@
 #include "ECS/Components/MeshComponent.h"
 #include "ECS/Components/InputCon.h"
 
-#include "EventManager.h"
 
 #ifndef GAMEENGINE_MOVESYSTEM_H
 #define GAMEENGINE_MOVESYSTEM_H
@@ -15,32 +14,29 @@
 class MoveSystem : ECS::System
 {
 	public:
+		float speed = 5.f;
+
+	public:
 		explicit MoveSystem(const std::string &name) : System(name){}
 
 	public:
-		void OnCreate(GEngine::GameWorld *world, GEngine::EngineWindow *window) override
-		{
-//			std::cout << "Overridden OnCreate...\n";
-
-//			EventManager::RightKeyPressed.AddListener(MoveRight);
-//			EventManager::LeftKeyPressed.AddListener(MoveLeft);
-		}
+		void OnCreate(GEngine::GameWorld *world, GEngine::EngineWindow *window) override {}
 
 		void OnUpdate(double dt, GEngine::GameWorld *world) override
 		{
-			for (auto ent : world->GetEcsManager()->EntitiesWithComponents<Transform, MeshComponent, Components::InputControl>())
+			for (auto ent : world->GetEcsManager()->EntitiesWithComponents<Transform, Components::InputControl>())
 			{
 				auto tc = world->GetEcsManager()->GetComponent<Transform>(ent);
 				auto ic = world->GetEcsManager()->GetComponent<Components::InputControl>(ent);
 
 				if(ic->right)
 				{
-					tc->position.x += 10;
+					tc->position.x += (1.5f * dt * speed);
 				}
 
 				if(ic->left)
 				{
-					tc->position.x -= 10;
+					tc->position.x -= (1.5f * dt * speed);
 				}
 
 				// Set the updated position

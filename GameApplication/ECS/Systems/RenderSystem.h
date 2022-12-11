@@ -6,7 +6,7 @@
 #define GAMEENGINE_RENDERSYSTEM_H
 
 #include "GEngine/EcsCore/System.h"
-#include "EventManager.h"
+#include "Utilities/EngineEventManager.h"
 #include "GGraphics/Transformations.h"
 
 #include "ECS/Components/Transform.h"
@@ -32,7 +32,10 @@ class RenderSystem : ECS::System
 		void OnCreate(GEngine::GameWorld *world, GEngine::EngineWindow *window) override
 		{
 			pWindow = window;
-			SetupSceneCamera(_sceneCamera);
+
+			Events::EngineEventManager::WindowResized.AddListener([this](){
+				SetupSceneCamera(_sceneCamera);
+			});
 
 //			for (auto entId : world->GetEcsManager()->EntitiesWithComponents<Transform, MeshComponent>())
 //			{
