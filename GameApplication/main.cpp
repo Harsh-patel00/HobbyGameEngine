@@ -61,10 +61,10 @@ class Initiate
 		{
 			std::cout << "Creating and Setting up entities...\n";
 
-			CreateCubeEntity();
+//			CreateCubeEntity();
 			CreateCube2Entity();
-			CreateCube3Entity();
-			CreateCube4Entity();
+//			CreateCube3Entity();
+//			CreateCube4Entity();
 
 			std::cout << "Creating and Setting up entities done.\n";
 		}

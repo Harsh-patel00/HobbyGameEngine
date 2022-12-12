@@ -39,6 +39,16 @@ class MoveSystem : ECS::System
 					tc->position.x -= (1.5f * dt * speed);
 				}
 
+				if(ic->up)
+				{
+					tc->position.z += (1.5f * dt * speed);
+				}
+
+				if(ic->down)
+				{
+					tc->position.z -= (1.5f * dt * speed);
+				}
+
 				// Set the updated position
 				world->GetEcsManager()->SetComponentValue<Transform>({tc->position}, ent);
 				// Reset the values of the input so that the above conditions are always false

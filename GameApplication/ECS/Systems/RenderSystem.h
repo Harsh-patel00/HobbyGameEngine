@@ -206,9 +206,19 @@ class RenderSystem : ECS::System
 					// Discard any point outside cvv
 					if (point.x < -1 || point.x > 1 || point.y < -1 || point.y > 1) continue;
 
+					uint32_t xScreen = (point.x + 1) * 0.5 * _sceneCamera.viewport.width;
+					uint32_t yScreen = (point.y + 1) * 0.5 * _sceneCamera.viewport.height;
+
+//					if(xScreen <= 0 || yScreen <= 0)
+//					{
+//						std::cout << "XS :: " << xScreen << ", YS :: " << yScreen << "\n";
+//					}
+
 					// convert to raster space and mark the position of the vertex in the image with a simple dot
-					point.x = (uint32_t)((point.x + 1) * 0.5 * _sceneCamera.viewport.width);
-					point.y = (uint32_t)((point.y + 1) * 0.5 * _sceneCamera.viewport.height);
+					point.x = xScreen;
+					point.y = yScreen;
+
+
 				}
 				transformedTris.push_back(transformedTri);
 			}

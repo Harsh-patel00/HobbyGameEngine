@@ -24,22 +24,22 @@ class InputSystem : ECS::System
 		{
 			Components::InputControl inputControl{};
 
-			if(pWindow->GetKey(Utilities::KeyCode::W))
+			if(pWindow->GetKey(Utilities::KeyCode::W) || pWindow->GetKey(Utilities::KeyCode::ARR_UP))
 			{
 				inputControl.up = true;
 			}
 
-			if(pWindow->GetKey(Utilities::KeyCode::A))
+			if(pWindow->GetKey(Utilities::KeyCode::A) || pWindow->GetKey(Utilities::KeyCode::ARR_LEFT))
 			{
 				inputControl.left = true;
 			}
 
-			if(pWindow->GetKey(Utilities::KeyCode::S))
+			if(pWindow->GetKey(Utilities::KeyCode::S) || pWindow->GetKey(Utilities::KeyCode::ARR_DOWN))
 			{
 				inputControl.down = true;
 			}
 
-			if(pWindow->GetKey(Utilities::KeyCode::D))
+			if(pWindow->GetKey(Utilities::KeyCode::D) || pWindow->GetKey(Utilities::KeyCode::ARR_RIGHT))
 			{
 				inputControl.right = true;
 			}

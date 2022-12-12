@@ -37,6 +37,11 @@ namespace Utilities
 		   Y = 0x59,
 		   Z = 0x5A,
 
+		   ARR_LEFT = 0x25,
+		   ARR_RIGHT = 0x27,
+		   ARR_UP = 0x26,
+		   ARR_DOWN = 0x28,
+
 		   // Mouse codes
 		   LMOUSEDOWN = 0x01,
    };
