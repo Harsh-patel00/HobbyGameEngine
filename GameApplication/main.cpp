@@ -95,7 +95,7 @@ class Initiate
 			em->AssignComponentAndSetDefaultValues<Components::InputControl>(cube2);
 
 			Components::MeshComponent mc{};
-			mc.mesh = *new GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
+			mc.mesh = *new GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube, true);
 
 			em->SetComponentValue<Components::Transform>({
 												{0, 0, 0},

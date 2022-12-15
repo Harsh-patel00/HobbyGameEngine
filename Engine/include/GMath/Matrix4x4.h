@@ -125,8 +125,6 @@ struct Matrix4x4
 			Point4<T>intermediateResult = (*this) * p3ToP4;
 			Point3<T> finalRes;
 
-			// TODO: Perform clipping operations here on 'intermediateResult', i.e before dividing by w
-
 			if(intermediateResult.w != 0 && intermediateResult.w != 1)
 			{
 				finalRes = {

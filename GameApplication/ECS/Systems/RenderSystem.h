@@ -84,47 +84,51 @@ class RenderSystem : ECS::System
 						 rotVec,
 						 transform->scale}, entId);
 
-				ProcessMesh(meshComp->mesh, *transform);
+				auto *meshCopy = new GGraphics::Mesh(meshComp->mesh, true);
+
+				/*{
+					std::cout << "Original Mesh :: \n";
+
+					for (auto tri: meshComp->mesh.GetTriangles())
+					{
+						tri.Print();
+					}
+				}*/
+
+				ProcessMesh(*meshCopy, *transform);
+
+				/*{
+					std::cout << "Transformed Mesh :: \n";
+
+					for (auto tri: meshComp->mesh.GetTriangles())
+					{
+						tri.Print();
+					}
+				}*/
 
 				entCount++;
 			}
 		}
 
-		void ProcessMesh(const GGraphics::Mesh& mesh, const Transform &transform)
+		void ProcessMesh(GGraphics::Mesh& mesh, const Transform &transform)
 		{
 			// Convert from Local to World Position
 			// Convert from World to View
 			// Convert from View to Projection (-1, 1)
 			// Convert from Projection to Window
 
-			GGraphics::Mesh meshCopy = mesh;
+			ConvertLocalToWorld(mesh, transform);
+			ConvertWorldToView(mesh);
+			ConvertViewToProjection(mesh);
+			// TODO: Perform clipping operations after projection
+			ConvertProjectionToViewport(mesh);
 
-//			std::cout << "Original Mesh :: \n";
-
-			for (auto tri : mesh.GetTriangles())
-			{
-//				tri.Print();
-			}
-
-			ConvertLocalToWorld(meshCopy, transform);
-			ConvertWorldToView(meshCopy);
-			ConvertViewToProjection(meshCopy);
-			ConvertProjectionToViewport(meshCopy);
-
-//			std::cout << "Transformed Mesh :: \n";
-
-			for (auto tri : meshCopy.GetTriangles())
-			{
-//				tri.Print();
-				tri.Draw(pWindow, GGraphics::Color(GGraphics::ColorEnum::GREEN));
-			}
+			mesh.Draw(pWindow, GGraphics::Color(GGraphics::ColorEnum::GREEN));
 
 		}
 
 		void ConvertLocalToWorld(GGraphics::Mesh &mesh, const Transform &transform)
 		{
-			std::vector<GGraphics::Primitives2d::Triangle> transformedTris{};
-
 			Mat4f T = GGraphics::Transformation::GetTranslationMatrix(transform.position);
 			Mat4f R = GGraphics::Transformation::GetRotationMatrix(transform.rotation);
 			Mat4f S = GGraphics::Transformation::GetScaleMatrix(transform.scale);
@@ -137,20 +141,12 @@ class RenderSystem : ECS::System
 
 //			std::cout << "matL2W Mat :: " << matL2W << "\n";
 
-			for (auto tri : mesh.GetTriangles())
+			// For each point in mesh
+			for(Point3f &point : *mesh.GetVertices())
 			{
-				GGraphics::Primitives2d::Triangle transformedTri = tri;
-
-				// For each point in triangle
-				for(Point3f &point : transformedTri.points)
-				{
-					// Apply Transformations
-					point = matL2W * point;
-				}
-
-				transformedTris.push_back(transformedTri);
+				// Apply Transformations
+				point = matL2W * point;
 			}
-			mesh.SetTriangles(transformedTris);
 		}
 
 		void ConvertWorldToView(GGraphics::Mesh &mesh)
@@ -160,51 +156,64 @@ class RenderSystem : ECS::System
 
 //			std::cout << "w2v Mat :: " << w2v << "\n";
 
-			std::vector<GGraphics::Primitives2d::Triangle> transformedTris{};
-			for (auto tri : mesh.GetTriangles())
+			for(Point3f &point : *mesh.GetVertices())
 			{
-				GGraphics::Primitives2d::Triangle transformedTri = tri;
-				for(Point3f &point : transformedTri.points)
-				{
-					point = w2v * point;
-				}
-				transformedTris.push_back(transformedTri);
+				point = w2v * point;
 			}
-			mesh.SetTriangles(transformedTris);
 		}
 
 		void ConvertViewToProjection(GGraphics::Mesh &mesh)
 		{
 //			std::cout << "View >> Proj\n";
-			std::vector<GGraphics::Primitives2d::Triangle> transformedTris{};
 
 			Mat4f projectionMatrix = GGraphics::Transformation::GetProjectionMatrix(_sceneCamera);
 
 //			std::cout << "v2P Mat :: " << projectionMatrix << "\n";
 
-			for (auto tri : mesh.GetTriangles())
+			for(Point3f &point : *mesh.GetVertices())
 			{
-				GGraphics::Primitives2d::Triangle transformedTri = tri;
-				for (Point3f &point: transformedTri.points)
-				{
 					point = projectionMatrix * point;
-				}
-				transformedTris.push_back(transformedTri);
+
 			}
-			mesh.SetTriangles(transformedTris);
 		}
 
 		void ConvertProjectionToViewport(GGraphics::Mesh &mesh)
 		{
 //			std::cout << "Proj >> Viewport \n";
-			std::vector<GGraphics::Primitives2d::Triangle> transformedTris{};
-			for (auto tri : mesh.GetTriangles())
+
+			auto meshIndices = mesh.GetIndices();
+			std::vector<Point3f> *meshVertices = mesh.GetVertices();
+
+			// Clip lines
+			GGraphics::Primitives2d::Triangle tri{};
+			// for each index in indices
+			for(int i = 0; i < meshIndices.size(); i++)
 			{
-				GGraphics::Primitives2d::Triangle transformedTri = tri;
-				for (Point3f &point: transformedTri.points)
+				tri.points[i%3] = (*meshVertices)[meshIndices[i]];
+
+				if(i%3 == 2)
 				{
+//					for (int j = 0; j < 3; ++j)
+//					{
+//						ClipLine(-1, -1, 1, 1, tri.points[j%3].x, tri.points[j%3].y, tri.points[(j+1)%3].x, tri.points[(j+1)%3].y);
+//						(*meshVertices)[meshIndices[i - j]] = tri.points[(i - j)%3];
+//					}
+
+					ClipLine(-1, -1, 1, 1, tri.points[(i - 2)%3].x, tri.points[(i - 2)%3].y, tri.points[(i - 1)%3].x, tri.points[(i - 1)%3].y);
+					ClipLine(-1, -1, 1, 1, tri.points[(i - 1)%3].x, tri.points[(i - 1)%3].y, tri.points[(i-0)%3].x, tri.points[(i-0)%3].y);
+					ClipLine(-1, -1, 1, 1, tri.points[(i - 0)%3].x, tri.points[(i-0)%3].y, tri.points[(i - 2)%3].x, tri.points[(i - 2)%3].y);
+
+					(*meshVertices)[meshIndices[i - 2]] = tri.points[(i - 2)%3];
+					(*meshVertices)[meshIndices[i - 1]] = tri.points[(i - 1)%3];
+					(*meshVertices)[meshIndices[i - 0]] = tri.points[(i - 0)%3];
+				}
+			}
+
+			for(Point3f &point : *mesh.GetVertices())
+			{
 					// Discard any point outside cvv
 					if (point.x < -1 || point.x > 1 || point.y < -1 || point.y > 1) continue;
+
 
 					uint32_t xScreen = (point.x + 1) * 0.5 * _sceneCamera.viewport.width;
 					uint32_t yScreen = (point.y + 1) * 0.5 * _sceneCamera.viewport.height;
@@ -217,12 +226,8 @@ class RenderSystem : ECS::System
 					// convert to raster space and mark the position of the vertex in the image with a simple dot
 					point.x = xScreen;
 					point.y = yScreen;
-
-
 				}
-				transformedTris.push_back(transformedTri);
-			}
-			mesh.SetTriangles(transformedTris);
+//			}
 		}
 
 		void SetupSceneCamera(Camera &camera)
@@ -238,6 +243,105 @@ class RenderSystem : ECS::System
 
 			camera.size = 1;
 			camera.fov = 60;
+		}
+
+		float maxi(const float arr[],int n) {
+			float m = 0;
+			for (int i = 0; i < n; ++i)
+				if (m < arr[i])
+					m = arr[i];
+			return m;
+		}
+
+		float mini(const float arr[], int n) {
+			float m = 1;
+			for (int i = 0; i < n; ++i)
+				if (m > arr[i])
+					m = arr[i];
+			return m;
+		}
+
+		// Liang–Barsky line clipping algorithm [Ref: https://en.wikipedia.org/wiki/Liang%E2%80%93Barsky_algorithm]
+		void ClipLine(float xmin, float ymin, float xmax, float ymax, float &x1, float &y1, float &x2, float &y2)
+		{
+			// defining variables
+			float p1 = -(x2 - x1);
+			float p2 = -p1;
+			float p3 = -(y2 - y1);
+			float p4 = -p3;
+
+			float q1 = x1 - xmin;
+			float q2 = xmax - x1;
+			float q3 = y1 - ymin;
+			float q4 = ymax - y1;
+
+			float posarr[5], negarr[5];
+			int posind = 1, negind = 1;
+			posarr[0] = 1;
+			negarr[0] = 0;
+
+			if((p1 == 0 && q1 < 0) || (p2 == 0 && q2 < 0) || (p3 == 0 && q3 < 0) || (p4 == 0 && q4 < 0))
+			{
+//				std::cout << "Line is parallel to clipping window!\n";
+				return;
+			}
+			if(p1 != 0)
+			{
+				float r1 = q1 / p1;
+				float r2 = q2 / p2;
+				if(p1 < 0)
+				{
+					negarr[negind++] = r1; // for negative p1, add it to negative array
+					posarr[posind++] = r2; // and add p2 to positive array
+				}
+				else
+				{
+					negarr[negind++] = r2;
+					posarr[posind++] = r1;
+				}
+			}
+			if(p3 != 0)
+			{
+				float r3 = q3 / p3;
+				float r4 = q4 / p4;
+				if(p3 < 0)
+				{
+					negarr[negind++] = r3;
+					posarr[posind++] = r4;
+				}
+				else
+				{
+					negarr[negind++] = r4;
+					posarr[posind++] = r3;
+				}
+			}
+
+			float xn1, yn1, xn2, yn2;
+			float rn1, rn2;
+			rn1 = maxi(negarr, negind); // maximum of negative array
+			rn2 = mini(posarr, posind); // minimum of positive array
+
+			if(rn1 > rn2)
+			{ // reject
+//				std::cout << "Line is outside the clipping window!\n";
+				return;
+			}
+
+			xn1 = x1 + p2 * rn1;
+			yn1 = y1 + p4 * rn1; // computing new points
+
+			xn2 = x1 + p2 * rn2;
+			yn2 = y1 + p4 * rn2;
+
+			x1 = xn1;
+			y1 = yn1;
+			x2 = xn2;
+			y2 = yn2;
+
+//			line(xn1, yn1, xn2, yn2); // the drawing the new line
+
+			// line(x1, y1, xn1, yn1); // 1st Discarded line
+			// line(x2, y2, xn2, yn2); // 2nd Discarded line
 		}
 };
 

@@ -215,6 +215,7 @@ void GEngine::EngineWindow::SwapBuffers()
 
 void GEngine::EngineWindow::DrawPixel(int x, int y, GGraphics::Color newColor)
 {
+
 	if(x == _windowWidth)
 		x--;
 
@@ -232,7 +233,7 @@ void GEngine::EngineWindow::ColorPixel(int x, int y, GGraphics::Color newColor)
 	uint32_t color = (newColor.r << 16) ^ (newColor.g << 8) ^ newColor.b;
 
 	// BUG: Engine crash when the cube is moved to the left or bottom of the screen
-	// TODO: Find out why value of x and y were negative here
+	// Find out why value of x and y were negative here
 
 	// The below condition is a temporary solution
 	if(x < 0 || x >= _windowWidth || y < 0 || y >= _windowHeight) return;

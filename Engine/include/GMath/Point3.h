@@ -68,6 +68,11 @@ class Point3
 			return Point3(p.x * s, p.y * s, p.z * s);
 		}
 
+		bool operator==(const Point3 &p)
+		{
+			return ((this->x == p.x) && (this->y == p.y) && (this->z == p.z));
+		}
+
 };
 
 #endif //GAMEENGINE_POINT3_H
