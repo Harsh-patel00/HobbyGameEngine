@@ -3,6 +3,7 @@
 //
 
 #include "Primitives3d.h"
+#include <set>
 
 #ifndef GAMEENGINE_MESH_H
 #define GAMEENGINE_MESH_H
@@ -16,115 +17,189 @@ namespace GGraphics
 			Cylinder,
 	};
 
+	enum class MeshDrawMode
+	{
+		Triangle,
+		Quad,
+		Line,
+		LineStrip
+	};
+
    class Mesh
    {
 	   // Store all the triangles of the mesh
 	   std::vector<GGraphics::Primitives2d::Triangle> _tris{};
-	   std::vector<Point3f> _verts{};
+	   std::vector<Point3f> _vertices{};
 	   std::vector<int> _indices{};
-	   bool _drawIndexedMesh{};
+
+	   MeshDrawMode _drawMode = MeshDrawMode::Triangle;
 
 	   public:
 			Mesh() = default;
-			explicit Mesh(PRIMITIVE3DTYPE type, bool isIndexed = false)
+			explicit Mesh(PRIMITIVE3DTYPE type)
 			{
-				_drawIndexedMesh = isIndexed;
-
 				switch (type)
 				{
 					case PRIMITIVE3DTYPE::Cube:
-							for (int & index : Primitives3d::Cube::indices)
+						SetIndices(Primitives3d::Cube::indices, MeshDrawMode::Triangle);
+						for (auto & vertex : Primitives3d::Cube::vertices)
 							{
-								_indices.push_back(index);
+								_vertices.push_back(vertex);
 							}
-							for (auto & vertex : Primitives3d::Cube::vertices)
-							{
-								_verts.push_back(vertex);
-							}
-							for (auto &tri: Primitives3d::Cube::tris)
-							{
-								_tris.push_back(tri);
-							}
+						GenerateTris();
 						break;
 					case PRIMITIVE3DTYPE::Sphere:
-						break;
 					case PRIMITIVE3DTYPE::Cylinder:
 						break;
 				}
 			}
-			Mesh(Mesh &m, bool isIndexed = false)
+			Mesh(const std::vector<Point3f>& vertices, const std::vector<int>& indices, MeshDrawMode drawMode)
 			{
-				_drawIndexedMesh = isIndexed;
+				for (auto &vertex: vertices)
+				{
+					_vertices.push_back(vertex);
+				}
+				SetIndices(Primitives3d::Cube::indices, drawMode);
+				GenerateTris();
+			}
+			Mesh(Mesh &m)
+			{
+				_vertices = m.GetVertices();
+				SetIndices(m.GetIndices(), m.GetDrawMode());
 
-				_tris = m.GetTriangles();
-				_verts = *m.GetVertices();
-				_indices = m.GetIndices();
+				GenerateTris();
 			}
 
-			// If a default mesh created, then by calling this function you'll override the mesh
-			void SetTriangles(const std::vector<GGraphics::Primitives2d::Triangle> &meshTris)
-			{
-				_tris = meshTris;
-			}
-
-			// This function returns the address of _tris which can't be modified
-		   std::vector<GGraphics::Primitives2d::Triangle>& GetTriangles()
+		   std::vector<GGraphics::Primitives2d::Triangle> GetTriangles()
 		   {
 				return _tris;
 		   }
 
-		   void SetIndices(const std::vector<int> &indices)
+		   void SetIndices(const std::vector<int> &indices, MeshDrawMode drawMode)
 		   {
+				switch(drawMode)
+				{
+					case MeshDrawMode::Triangle:
+						if(indices.size() % 3 != 0) throw std::length_error("Indices for triangle must be multiples of 3.");
+						break;
+					case MeshDrawMode::Quad:
+						if(indices.size() % 4 != 0) throw std::length_error("Indices for quad must be multiples of 4.");
+						break;
+					case MeshDrawMode::Line:
+						if(indices.size() % 2 != 0) throw std::length_error("Indices for line must be multiples of 2.");
+						break;
+
+					case MeshDrawMode::LineStrip:
+					default:
+						// Do nothing
+						break;
+				}
+
 				_indices = indices;
 		   }
 
-		   [[nodiscard]] const std::vector<int>& GetIndices() const
+		   [[nodiscard]] std::vector<int> GetIndices() const
 		   {
 				return _indices;
 		   }
 
-		   void SetVerts(const std::vector<Point3f> &verts)
+		   void SetVertices(const std::vector<Point3f> &verts)
 		   {
-				_verts = verts;
+			   _vertices = verts;
 		   }
 
-		   std::vector<Point3f>* GetVertices()
+		   [[nodiscard]] std::vector<Point3f> GetVertices() const
 		   {
-				return &_verts;
+				return _vertices;
+		   }
+
+		   [[nodiscard]] MeshDrawMode GetDrawMode() const
+		   {
+				return _drawMode;
 		   }
 
 		   // If you use default constructor it'll not render anything
 			void Draw(GEngine::EngineWindow *window, Color lineColor)
 			{
-				if(_drawIndexedMesh)
+				if(_indices.empty()) return;
+
+				if(_drawMode == MeshDrawMode::Triangle)
 				{
-					DrawIndexed(window, lineColor);
+					DrawTriangle(_indices, window, lineColor);
 				}
-				else
+				else if(_drawMode == MeshDrawMode::Quad)
 				{
-					for (auto tri: _tris)
+					std::vector<int> quadSubIndices;
+
+					for (int i = 0; i < _indices.size(); i+=2)
 					{
-						tri.Draw(window, lineColor);
+						for (int j = 0; j < 3; ++j)
+						{
+							int ind = i + j;
+
+							if( (i != 0 && j != 0) && ind % 4 == 0 )
+							{
+								ind  = ind - 4;
+							}
+							quadSubIndices.push_back(_indices[ind]);
+						}
+					}
+
+					DrawTriangle(quadSubIndices, window, lineColor);
+				}
+				else if(_drawMode == MeshDrawMode::Line)
+				{
+					// for each index in indices
+					for(int i = 0; i < _indices.size() - 1; i += 2)
+					{
+						GGraphics::Primitives2d::Line{_vertices[_indices[i]], _vertices[_indices[i+1]], window, lineColor}.Draw();
+					}
+				}
+				else if(_drawMode == MeshDrawMode::LineStrip)
+				{
+					GGraphics::Primitives2d::Line line{};
+					// for each index in indices
+					for(int i = 0; i < _indices.size() - 1; i++)
+					{
+						GGraphics::Primitives2d::Line{_vertices[_indices[i]], _vertices[_indices[i+1]], window, lineColor}.Draw();
 					}
 				}
 			}
+
+		   void DrawTriangle(const std::vector<int>& indexList, GEngine::EngineWindow *window, Color &lineColor)
+		   {
+			   if(indexList.size() % 3 != 0) throw std::length_error("Indices for triangle must be multiples of 3.");
+
+				// for each index in indices
+			   for(int i = 0; i < indexList.size() - 2; i+=3)
+			   {
+				   Primitives2d::Triangle
+				   {
+						   _vertices[_indices[i]],
+						   _vertices[_indices[i + 1]],
+						   _vertices[_indices[i + 2]]
+				   }.Draw(window, lineColor);
+			   }
+		   }
 
 	   private:
-			void DrawIndexed(GEngine::EngineWindow *window, Color lineColor)
-			{
-				GGraphics::Primitives2d::Triangle tri{};
-				// for each index in indices
-				for(int i = 0; i < _indices.size(); i++)
-				{
-					tri.points[i%3] = _verts[_indices[i]];
+		   void GenerateTris()
+		   {
+			   _tris.clear();
 
-					if(i%3 == 2)
-					{
-						tri.Draw(window, lineColor);
-						tri = {};
-					}
-				}
-			}
+			   GGraphics::Primitives2d::Triangle tri{};
+			   // for each index in indices
+			   for(int i = 0; i < _indices.size(); i++)
+			   {
+				   tri.points[i % 3] = _vertices[_indices[i]];
+
+				   if(i%3 == 2)
+				   {
+					   _tris.push_back(tri);
+					   tri = {};
+				   }
+			   }
+		   }
    };
 }
 #endif //GAMEENGINE_MESH_H

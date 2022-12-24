@@ -77,7 +77,7 @@ class Initiate
 			em->AssignComponent<Components::MeshComponent>(cube);
 
 			Components::MeshComponent mc{};
-			mc.mesh = *new GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
+			mc.mesh = GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
 
 			em->SetComponentValue<Components::Transform>({
 												{-2, 0, 0},
@@ -95,7 +95,7 @@ class Initiate
 			em->AssignComponentAndSetDefaultValues<Components::InputControl>(cube2);
 
 			Components::MeshComponent mc{};
-			mc.mesh = *new GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube, true);
+			mc.mesh = GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
 
 			em->SetComponentValue<Components::Transform>({
 												{0, 0, 0},
@@ -112,7 +112,7 @@ class Initiate
 			em->AssignComponent<Components::MeshComponent>(cube3);
 
 			Components::MeshComponent mc{};
-			mc.mesh = *new GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
+			mc.mesh = GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
 
 			em->SetComponentValue<Components::Transform>({
 												{2, 0, 0},
@@ -129,7 +129,7 @@ class Initiate
 			em->AssignComponent<Components::MeshComponent>(cube4);
 
 			Components::MeshComponent mc{};
-			mc.mesh = *new GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
+			mc.mesh = GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
 
 			em->SetComponentValue<Components::Transform>({
 												{0, -2, 0},

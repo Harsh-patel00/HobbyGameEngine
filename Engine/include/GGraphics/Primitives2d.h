@@ -25,6 +25,8 @@ namespace GGraphics
 
 				   Line() = default;
 
+				   Line(Point3f startPoint, Point3f endPoint) : start(startPoint), end(endPoint) {}
+
 				   Line(Point3f startPoint, Point3f endPoint, GEngine::EngineWindow *window, Color lineColor) :
 						   start(startPoint), end(endPoint), pDrawWindow(window), color(lineColor) {}
 

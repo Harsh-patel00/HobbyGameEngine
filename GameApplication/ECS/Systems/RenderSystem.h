@@ -84,7 +84,7 @@ class RenderSystem : ECS::System
 						 rotVec,
 						 transform->scale}, entId);
 
-				auto *meshCopy = new GGraphics::Mesh(meshComp->mesh, true);
+				auto *meshCopy = new GGraphics::Mesh(meshComp->mesh);
 
 				/*{
 					std::cout << "Original Mesh :: \n";
@@ -141,12 +141,15 @@ class RenderSystem : ECS::System
 
 //			std::cout << "matL2W Mat :: " << matL2W << "\n";
 
+			auto modifiedVerts = mesh.GetVertices();
 			// For each point in mesh
-			for(Point3f &point : *mesh.GetVertices())
+			for(Point3f &point : modifiedVerts)
 			{
 				// Apply Transformations
 				point = matL2W * point;
 			}
+
+			mesh.SetVertices(modifiedVerts);
 		}
 
 		void ConvertWorldToView(GGraphics::Mesh &mesh)
@@ -156,10 +159,14 @@ class RenderSystem : ECS::System
 
 //			std::cout << "w2v Mat :: " << w2v << "\n";
 
-			for(Point3f &point : *mesh.GetVertices())
+			auto modifiedVerts = mesh.GetVertices();
+
+			for(Point3f &point : modifiedVerts)
 			{
 				point = w2v * point;
 			}
+
+			mesh.SetVertices(modifiedVerts);
 		}
 
 		void ConvertViewToProjection(GGraphics::Mesh &mesh)
@@ -169,47 +176,29 @@ class RenderSystem : ECS::System
 			Mat4f projectionMatrix = GGraphics::Transformation::GetProjectionMatrix(_sceneCamera);
 
 //			std::cout << "v2P Mat :: " << projectionMatrix << "\n";
-
-			for(Point3f &point : *mesh.GetVertices())
+			auto modifiedVerts = mesh.GetVertices();
+			for (Point3f &point: modifiedVerts)
 			{
-					point = projectionMatrix * point;
+				point = projectionMatrix * point;
 
 			}
+
+			mesh.SetVertices(modifiedVerts);
 		}
 
 		void ConvertProjectionToViewport(GGraphics::Mesh &mesh)
 		{
 //			std::cout << "Proj >> Viewport \n";
 
-			auto meshIndices = mesh.GetIndices();
-			std::vector<Point3f> *meshVertices = mesh.GetVertices();
+			// Clip Polygon outside the view volume
+//			ClipPolygon(mesh);
 
-			// Clip lines
-			GGraphics::Primitives2d::Triangle tri{};
-			// for each index in indices
-			for(int i = 0; i < meshIndices.size(); i++)
-			{
-				tri.points[i%3] = (*meshVertices)[meshIndices[i]];
+			// Clip Lines
+			ClipLinesOfATrianlgle(mesh);
 
-				if(i%3 == 2)
-				{
-//					for (int j = 0; j < 3; ++j)
-//					{
-//						ClipLine(-1, -1, 1, 1, tri.points[j%3].x, tri.points[j%3].y, tri.points[(j+1)%3].x, tri.points[(j+1)%3].y);
-//						(*meshVertices)[meshIndices[i - j]] = tri.points[(i - j)%3];
-//					}
+			auto modifiedVerts = mesh.GetVertices();
 
-					ClipLine(-1, -1, 1, 1, tri.points[(i - 2)%3].x, tri.points[(i - 2)%3].y, tri.points[(i - 1)%3].x, tri.points[(i - 1)%3].y);
-					ClipLine(-1, -1, 1, 1, tri.points[(i - 1)%3].x, tri.points[(i - 1)%3].y, tri.points[(i-0)%3].x, tri.points[(i-0)%3].y);
-					ClipLine(-1, -1, 1, 1, tri.points[(i - 0)%3].x, tri.points[(i-0)%3].y, tri.points[(i - 2)%3].x, tri.points[(i - 2)%3].y);
-
-					(*meshVertices)[meshIndices[i - 2]] = tri.points[(i - 2)%3];
-					(*meshVertices)[meshIndices[i - 1]] = tri.points[(i - 1)%3];
-					(*meshVertices)[meshIndices[i - 0]] = tri.points[(i - 0)%3];
-				}
-			}
-
-			for(Point3f &point : *mesh.GetVertices())
+			for(Point3f &point : modifiedVerts)
 			{
 					// Discard any point outside cvv
 					if (point.x < -1 || point.x > 1 || point.y < -1 || point.y > 1) continue;
@@ -227,7 +216,83 @@ class RenderSystem : ECS::System
 					point.x = xScreen;
 					point.y = yScreen;
 				}
-//			}
+
+			mesh.SetVertices(modifiedVerts);
+		}
+
+		void ApplyPolygonClipingAlgorithm(int xmin, int ymin, int xmax, int ymax, std::vector<Point3f*> polygonPoints)
+		{
+			auto OutsideInsideCheck = []()
+			{
+				return -1; // Outside
+				return 1; // Inside
+			};
+
+			for (int i = 0; i < polygonPoints.size(); i += 2)
+			{
+				GGraphics::Primitives2d::Line lineToBeChecked = GGraphics::Primitives2d::Line(*polygonPoints[i], *polygonPoints[i+1]);
+
+
+			}
+
+
+
+		}
+
+		void ClipPolygon(GGraphics::Mesh &mesh)
+		{
+			auto meshIndices = mesh.GetIndices();
+			std::vector<Point3f> meshVertices = mesh.GetVertices();
+
+			// Clip lines
+			std::vector<Point3f*> polygonPoints{};
+			// for each index in indices
+			for(int i = 0; i < meshIndices.size(); i++)
+			{
+				polygonPoints.push_back(&meshVertices[meshIndices[i]]);
+
+				if(i % 3 == 2)
+				{
+					// At this point polygonPoints contains a triangle
+					ApplyPolygonClipingAlgorithm(-1, -1, 1, 1, polygonPoints);
+				}
+			}
+		}
+
+		void ClipLinesOfATrianlgle(GGraphics::Mesh &mesh)
+		{
+			auto meshIndices = mesh.GetIndices();
+			std::vector<Point3f> meshVertices = mesh.GetVertices();
+
+			// Clip lines
+			GGraphics::Primitives2d::Triangle tri{};
+			// for each index in indices
+			for(int i = 0; i < meshIndices.size(); i++)
+			{
+				tri.points[i%3] = meshVertices[meshIndices[i]];
+
+				if(i%3 == 2)
+				{
+//					for (int j = 0; j < 3; ++j)
+//					{
+//						LineClippingAlgorithm(-1, -1, 1, 1, tri.points[j%3].x, tri.points[j%3].y, tri.points[(j+1)%3].x, tri.points[(j+1)%3].y);
+//						(*meshVertices)[meshIndices[i - j]] = tri.points[(i - j)%3];
+//					}
+
+					LineClippingAlgorithm(-1, -1, 1, 1, tri.points[(i - 2) % 3].x, tri.points[(i - 2) % 3].y,
+					                      tri.points[(i - 1) % 3].x, tri.points[(i - 1) % 3].y);
+					LineClippingAlgorithm(-1, -1, 1, 1, tri.points[(i - 1) % 3].x, tri.points[(i - 1) % 3].y,
+					                      tri.points[(i - 0) % 3].x, tri.points[(i - 0) % 3].y);
+					LineClippingAlgorithm(-1, -1, 1, 1, tri.points[(i - 0) % 3].x, tri.points[(i - 0) % 3].y,
+					                      tri.points[(i - 2) % 3].x, tri.points[(i - 2) % 3].y);
+
+					meshVertices[meshIndices[i - 2]] = tri.points[(i - 2)%3];
+					meshVertices[meshIndices[i - 1]] = tri.points[(i - 1)%3];
+					meshVertices[meshIndices[i - 0]] = tri.points[(i - 0)%3];
+				}
+			}
+
+			mesh.SetVertices(meshVertices);
 		}
 
 		void SetupSceneCamera(Camera &camera)
@@ -245,25 +310,27 @@ class RenderSystem : ECS::System
 			camera.fov = 60;
 		}
 
-		float maxi(const float arr[],int n) {
-			float m = 0;
-			for (int i = 0; i < n; ++i)
-				if (m < arr[i])
-					m = arr[i];
-			return m;
-		}
-
-		float mini(const float arr[], int n) {
-			float m = 1;
-			for (int i = 0; i < n; ++i)
-				if (m > arr[i])
-					m = arr[i];
-			return m;
-		}
-
 		// Liang–Barsky line clipping algorithm [Ref: https://en.wikipedia.org/wiki/Liang%E2%80%93Barsky_algorithm]
-		void ClipLine(float xmin, float ymin, float xmax, float ymax, float &x1, float &y1, float &x2, float &y2)
+		void LineClippingAlgorithm(float xmin, float ymin, float xmax, float ymax, float &x1, float &y1, float &x2, float &y2)
 		{
+			auto maxi = [](const float arr[],int n)
+					{
+				float m = 0;
+				for (int i = 0; i < n; ++i)
+					if (m < arr[i])
+						m = arr[i];
+				return m;
+			};
+
+			auto mini = [](const float arr[], int n) {
+				float m = 1;
+				for (int i = 0; i < n; ++i)
+					if (m > arr[i])
+						m = arr[i];
+				return m;
+			};
+
+
 			// defining variables
 			float p1 = -(x2 - x1);
 			float p2 = -p1;

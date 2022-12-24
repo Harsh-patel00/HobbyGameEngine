@@ -18,8 +18,7 @@ namespace GGraphics
 			struct Cube
 			{
 				static Point3f vertices[8];
-				static int indices[];
-				static GGraphics::Primitives2d::Triangle tris[12];
+				static std::vector<int> indices;
 
 				private:
 					static GMath::Point3f A;
@@ -45,7 +44,7 @@ namespace GGraphics
    //                                                      0, 1, 2, 3, 4, 5, 6, 7
    GMath::Point3f Primitives3d::Cube::vertices[8] {A, B, C, D, E, F, G, H};
 
-   int Primitives3d::Cube::indices[]
+   std::vector<int> Primitives3d::Cube::indices
 	{
 		   // Front (ABC, ACD)
 		   0, 1, 2,
@@ -70,34 +69,6 @@ namespace GGraphics
 		   // Bottom (HED, HDA)
 			7, 4, 3,
 			7, 3, 0
-	};
-
-
-	GGraphics::Primitives2d::Triangle Primitives3d::Cube::tris[12]
-	{
-			// Front (ABC, ACD)
-			{A, B, C},
-			{A, C, D},
-
-			// Right (DCF, DFE)
-			{D, C, F},
-			{D, F, E},
-
-			// Back (EFG, EGH)
-			{E, F, G},
-			{E, G, H},
-
-			// Left (HGB, HBA)
-			{H, G, B},
-			{H, B, A},
-
-			// Top (BGF, BFC)
-			{B, G, F},
-			{B, F, C},
-
-			// Bottom (HED, HDA)
-			{H, E, D},
-			{H, D, A},
 	};
 }
 
