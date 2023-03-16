@@ -93,6 +93,32 @@ struct Vector3 : public Point3<T>
 			return Vector3(p - *this).GetLength();
 		}
 
+	public: // Static functions
+		static Vector3 Zero()
+		{
+			return Vector3(0, 0, 0);
+		}
+
+		static Vector3 One()
+		{
+			return Vector3(1, 1, 1);
+		}
+
+		static Vector3 Up()
+		{
+			return Vector3(0, 1, 0);
+		}
+
+		static Vector3 Right()
+		{
+			return Vector3(1, 0, 0);
+		}
+
+		static Vector3 Forward()
+		{
+			return Vector3(0, 0, 1);
+		}
+
 	private:
 		void SetLength()
 		{

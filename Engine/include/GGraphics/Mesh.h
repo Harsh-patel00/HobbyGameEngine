@@ -21,7 +21,7 @@ namespace GGraphics
 	{
 		Triangle,
 		Quad,
-		Line,
+		Lines,
 		LineStrip
 	};
 
@@ -59,7 +59,7 @@ namespace GGraphics
 				{
 					_vertices.push_back(vertex);
 				}
-				SetIndices(Primitives3d::Cube::indices, drawMode);
+				SetIndices(indices, drawMode);
 				GenerateTris();
 			}
 			Mesh(Mesh &m)
@@ -85,7 +85,7 @@ namespace GGraphics
 					case MeshDrawMode::Quad:
 						if(indices.size() % 4 != 0) throw std::length_error("Indices for quad must be multiples of 4.");
 						break;
-					case MeshDrawMode::Line:
+					case MeshDrawMode::Lines:
 						if(indices.size() % 2 != 0) throw std::length_error("Indices for line must be multiples of 2.");
 						break;
 
@@ -95,6 +95,7 @@ namespace GGraphics
 						break;
 				}
 
+				_drawMode = drawMode;
 				_indices = indices;
 		   }
 
@@ -147,7 +148,7 @@ namespace GGraphics
 
 					DrawTriangle(quadSubIndices, window, lineColor);
 				}
-				else if(_drawMode == MeshDrawMode::Line)
+				else if(_drawMode == MeshDrawMode::Lines)
 				{
 					// for each index in indices
 					for(int i = 0; i < _indices.size() - 1; i += 2)
@@ -157,7 +158,6 @@ namespace GGraphics
 				}
 				else if(_drawMode == MeshDrawMode::LineStrip)
 				{
-					GGraphics::Primitives2d::Line line{};
 					// for each index in indices
 					for(int i = 0; i < _indices.size() - 1; i++)
 					{
@@ -165,22 +165,13 @@ namespace GGraphics
 					}
 				}
 			}
-
-		   void DrawTriangle(const std::vector<int>& indexList, GEngine::EngineWindow *window, Color &lineColor)
-		   {
-			   if(indexList.size() % 3 != 0) throw std::length_error("Indices for triangle must be multiples of 3.");
-
-				// for each index in indices
-			   for(int i = 0; i < indexList.size() - 2; i+=3)
-			   {
-				   Primitives2d::Triangle
-				   {
-						   _vertices[_indices[i]],
-						   _vertices[_indices[i + 1]],
-						   _vertices[_indices[i + 2]]
-				   }.Draw(window, lineColor);
-			   }
-		   }
+			void DrawPixel(GEngine::EngineWindow *window, Color color)
+			{
+				for (auto & vertex : _vertices)
+				{
+					window->DrawPixel((int)vertex.x, (int)vertex.y, color);
+				}
+			}
 
 	   private:
 		   void GenerateTris()
@@ -198,6 +189,21 @@ namespace GGraphics
 					   _tris.push_back(tri);
 					   tri = {};
 				   }
+			   }
+		   }
+		   void DrawTriangle(const std::vector<int>& indexList, GEngine::EngineWindow *window, Color &lineColor)
+		   {
+			   if(indexList.size() % 3 != 0) throw std::length_error("Indices for triangle must be multiples of 3.");
+
+			   // for each index in indices
+			   for(int i = 0; i < indexList.size() - 2; i+=3)
+			   {
+				   Primitives2d::Triangle
+						   {
+								   _vertices[indexList[i]],
+								   _vertices[indexList[i + 1]],
+								   _vertices[indexList[i + 2]]
+						   }.Draw(window, lineColor);
 			   }
 		   }
    };

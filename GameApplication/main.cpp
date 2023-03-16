@@ -61,8 +61,8 @@ class Initiate
 		{
 			std::cout << "Creating and Setting up entities...\n";
 
-//			CreateCubeEntity();
-			CreateCube2Entity();
+			CreateCubeEntity();
+//			CreateCube2Entity();
 //			CreateCube3Entity();
 //			CreateCube4Entity();
 
@@ -75,12 +75,28 @@ class Initiate
 			em->SetEntityName(cube, "Default Cube");
 			em->AssignComponent<Components::Transform>(cube);
 			em->AssignComponent<Components::MeshComponent>(cube);
+			em->AssignComponentAndSetDefaultValues<Components::InputControl>(cube2);
 
 			Components::MeshComponent mc{};
+
+			std::vector<Point3f> verts{
+//				Point3f(0, 0, 0),
+//				Point3f(0, 0, 1),
+//				Point3f(0.5f, 0, 1.5f),
+//				Point3f(1, 0, 1),
+//				Point3f(1, 0, 0)
+				Point3f(-0.5f, 0, 0),
+				Point3f(0, 0.5f, 0),
+				Point3f(0.5f, 0, 0)
+			};
+
+			std::vector<int> indices{ 0, 1, 2 };
+
+//			mc.mesh = GGraphics::Mesh(verts, indices, GGraphics::MeshDrawMode::Triangle);
 			mc.mesh = GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
 
 			em->SetComponentValue<Components::Transform>({
-												{-2, 0, 0},
+												{0, 0, 0},
 											    {0, 0, 0},
 											    {1, 1, 1}}, cube);
 			em->SetComponentValue<Components::MeshComponent>(mc, cube);

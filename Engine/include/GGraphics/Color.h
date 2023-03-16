@@ -22,7 +22,9 @@ namespace GGraphics
 	   CYAN = GREEN | BLUE,       // [0000 0000, 0000 0000, 1111 1111, 1111 1111] // 0x0000FFFF
 
 	   WHITE = RED | GREEN | BLUE,     // [0000 0000, 1111 1111, 1111 1111, 1111 1111] // 0x00FFFFFF
-	   BLACK = RED & GREEN & BLUE
+	   BLACK = RED & GREEN & BLUE,
+
+	   GRAY = 0x00333333
    };
 
    class Color

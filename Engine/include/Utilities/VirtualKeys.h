@@ -42,6 +42,8 @@ namespace Utilities
 		   ARR_UP = 0x26,
 		   ARR_DOWN = 0x28,
 
+		   ESC = 0x1B,
+
 		   // Mouse codes
 		   LMOUSEDOWN = 0x01,
    };

@@ -31,6 +31,9 @@ namespace Components
 	   float size{};
 	   // Perspective
 	   float fov{};
+
+	   bool showViewportBG = false;
+	   GGraphics::Color cameraBgColor{};
    };
 
 #endif //GAMEENGINE_CAMERA_H

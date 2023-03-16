@@ -25,6 +25,7 @@ class RenderSystem : ECS::System
 		GEngine::EngineWindow *pWindow{};
 		Camera _sceneCamera{};
 		float rotation{}, speed = 50;
+		GGraphics::Mesh clippedMesh{};
 	public:
 		explicit RenderSystem(const std::string &name) : System(name){}
 
@@ -48,6 +49,9 @@ class RenderSystem : ECS::System
 
 		void OnUpdate(double dt, GEngine::GameWorld *world) override
 		{
+			if(_sceneCamera.showViewportBG)
+				DrawViewportBG();
+
 			rotation += (float) dt * speed;
 
 			if(rotation > 359)
@@ -107,6 +111,17 @@ class RenderSystem : ECS::System
 				}*/
 
 				entCount++;
+			}
+		}
+
+		void DrawViewportBG()
+		{
+			for (int x = _sceneCamera.viewport.startX; x <= (_sceneCamera.viewport.startX + _sceneCamera.viewport.width); x++)
+			{
+				for (int y = _sceneCamera.viewport.startY; y <= (_sceneCamera.viewport.startY + _sceneCamera.viewport.height); y++)
+				{
+					pWindow->DrawPixel(x, y, _sceneCamera.cameraBgColor);
+				}
 			}
 		}
 
@@ -194,18 +209,47 @@ class RenderSystem : ECS::System
 //			ClipPolygon(mesh);
 
 			// Clip Lines
-			ClipLinesOfATrianlgle(mesh);
+//			ClipLinesOfATrianlgle(mesh);
 
-			auto modifiedVerts = mesh.GetVertices();
+//			std::vector<Point3f> newPoints{};
+//			std::vector<int> newIndices{};
 
-			for(Point3f &point : modifiedVerts)
+			auto verts = mesh.GetVertices();
+//			auto inds = mesh.GetIndices();
+
+			/*if( mesh.GetDrawMode() == GGraphics::MeshDrawMode::Lines )
+			{
+				for(int i = 0; i < inds.size() - 1; i += 2)
+				{
+					LineClippingAlgorithm(-1, -1, 1, 1, verts[inds[i]].x, verts[inds[i]].y, verts[inds[i+1]].x, verts[inds[i+1]].y);
+				}
+			}*/
+
+			/*if( mesh.GetDrawMode() == GGraphics::MeshDrawMode::LineStrip ||
+				mesh.GetDrawMode() == GGraphics::MeshDrawMode::Triangle ||
+				mesh.GetDrawMode() == GGraphics::MeshDrawMode::Quad )
+			{
+				ClipPolygon(mesh);
+			}*/
+
+			for(Point3f &point : verts)
 			{
 					// Discard any point outside cvv
-					if (point.x < -1 || point.x > 1 || point.y < -1 || point.y > 1) continue;
+					if (point.x <= -1)
+						point.x = -1;
+
+					if (point.y <= -1)
+						point.y = -1;
+
+					if (point.x >= 1)
+						point.x = 0.99999f;
+
+					if (point.y >= 1)
+						point.y = 0.99999f;
 
 
-					uint32_t xScreen = (point.x + 1) * 0.5 * _sceneCamera.viewport.width;
-					uint32_t yScreen = (point.y + 1) * 0.5 * _sceneCamera.viewport.height;
+					uint32_t xScreen = (point.x + 1) * 0.5f * _sceneCamera.viewport.width;
+					uint32_t yScreen = (point.y + 1) * 0.5f * _sceneCamera.viewport.height;
 
 //					if(xScreen <= 0 || yScreen <= 0)
 //					{
@@ -213,27 +257,61 @@ class RenderSystem : ECS::System
 //					}
 
 					// convert to raster space and mark the position of the vertex in the image with a simple dot
-					point.x = xScreen;
-					point.y = yScreen;
+					point.x = xScreen + _sceneCamera.viewport.startX;
+					point.y = yScreen + _sceneCamera.viewport.startY;
+
+//					newPoints.push_back(point);
 				}
 
-			mesh.SetVertices(modifiedVerts);
+//			for (int i = 0; i < newPoints.size(); ++i)
+//			{
+//				newIndices.push_back(i);
+//			}
+
+//			// To complete the polygon, add the first index at last position too
+//			newIndices.push_back(0);
+//
+//			clippedMesh.SetVertices(newPoints);
+//			clippedMesh.SetIndices(newIndices, GGraphics::MeshDrawMode::LineStrip);
+
+			mesh.SetVertices(verts);
 		}
 
-		void ApplyPolygonClipingAlgorithm(int xmin, int ymin, int xmax, int ymax, std::vector<Point3f*> polygonPoints)
+		void ApplyPolygonClipingAlgorithm(int xmin, int ymin, int xmax, int ymax, std::vector<Point3f> polygonPoints)
 		{
+			enum class Sides
+			{
+					Left    = 0,
+					Right   = 1,
+					Top     = 2,
+					Bottom = 3
+			};
+
+			for (int i = 0; i < 4; ++i)
+			{
+				switch ((Sides)i)
+				{
+					case Sides::Left:
+					{
+						
+					}
+						break;
+					case Sides::Right:
+						break;
+					case Sides::Top:
+						break;
+					case Sides::Bottom:
+						break;
+				}
+			}
+
 			auto OutsideInsideCheck = []()
 			{
 				return -1; // Outside
 				return 1; // Inside
 			};
 
-			for (int i = 0; i < polygonPoints.size(); i += 2)
-			{
-				GGraphics::Primitives2d::Line lineToBeChecked = GGraphics::Primitives2d::Line(*polygonPoints[i], *polygonPoints[i+1]);
 
-
-			}
 
 
 
@@ -241,22 +319,22 @@ class RenderSystem : ECS::System
 
 		void ClipPolygon(GGraphics::Mesh &mesh)
 		{
-			auto meshIndices = mesh.GetIndices();
+			std::vector<int> meshIndices = mesh.GetIndices();
 			std::vector<Point3f> meshVertices = mesh.GetVertices();
 
-			// Clip lines
-			std::vector<Point3f*> polygonPoints{};
+			/*std::vector<Point3f*> polygonPoints{};
+
 			// for each index in indices
 			for(int i = 0; i < meshIndices.size(); i++)
 			{
 				polygonPoints.push_back(&meshVertices[meshIndices[i]]);
 
 				if(i % 3 == 2)
-				{
+				{*/
 					// At this point polygonPoints contains a triangle
-					ApplyPolygonClipingAlgorithm(-1, -1, 1, 1, polygonPoints);
-				}
-			}
+					ApplyPolygonClipingAlgorithm(-1, -1, 1, 1, meshVertices);
+			/*	}
+			}*/
 		}
 
 		void ClipLinesOfATrianlgle(GGraphics::Mesh &mesh)
@@ -297,8 +375,8 @@ class RenderSystem : ECS::System
 
 		void SetupSceneCamera(Camera &camera)
 		{
-			camera.origin = {0, 5, -10};
-			camera.lookAt = Vec3f(0, 0, 0);
+			camera.origin = {0, 0, -2};
+			camera.lookAt = Vec3f(0, 0, 1);
 			camera.upDirection = Vec3f(0, 1, 0);
 
 			camera.type = Components::CameraType::PERSPECTIVE;
@@ -308,6 +386,11 @@ class RenderSystem : ECS::System
 
 			camera.size = 1;
 			camera.fov = 60;
+
+			// TODO: Look into this...
+			//  Changing this to true, causes heavy performance penalty
+			camera.showViewportBG = false;
+			camera.cameraBgColor = GGraphics::Color(GGraphics::ColorEnum::GRAY);
 		}
 
 		// Liang–Barsky line clipping algorithm [Ref: https://en.wikipedia.org/wiki/Liang%E2%80%93Barsky_algorithm]
@@ -349,7 +432,7 @@ class RenderSystem : ECS::System
 
 			if((p1 == 0 && q1 < 0) || (p2 == 0 && q2 < 0) || (p3 == 0 && q3 < 0) || (p4 == 0 && q4 < 0))
 			{
-//				std::cout << "Line is parallel to clipping window!\n";
+//				std::cout << "Lines is parallel to clipping window!\n";
 				return;
 			}
 			if(p1 != 0)
@@ -390,7 +473,7 @@ class RenderSystem : ECS::System
 
 			if(rn1 > rn2)
 			{ // reject
-//				std::cout << "Line is outside the clipping window!\n";
+//				std::cout << "Lines is outside the clipping window!\n";
 				return;
 			}
 
