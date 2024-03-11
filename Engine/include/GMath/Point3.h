@@ -43,6 +43,11 @@ class Point3
 			return Point3(this->x + scalar, this->y + scalar, this->z + scalar);
 		}
 
+		Point3 operator+(const Point3 &p)
+		{
+			return Point3(this->x + p.x, this->y + p.y, this->z + p.z);
+		}
+
 		friend Point3 operator+(const T &scalar, const Point3 &p)
 		{
 			return Point3(p.x + scalar, p.y + scalar, p.z + scalar);
@@ -51,6 +56,11 @@ class Point3
 		Point3 operator-(const T &scalar)
 		{
 			return Point3(this->x - scalar, this->y - scalar, this->z - scalar);
+		}
+
+		Point3 operator-(const Point3 &p)
+		{
+			return Point3(this->x - p.x, this->y - p.y, this->z - p.z);
 		}
 
 		friend Point3 operator-(const T &scalar, const Point3 &p)
@@ -66,6 +76,11 @@ class Point3
 		friend Point3 operator*(const T &s, const Point3 &p)
 		{
 			return Point3(p.x * s, p.y * s, p.z * s);
+		}
+
+		Point3 operator/(const T &divisor)
+		{
+			return Point3(this->x / divisor, this->y / divisor, this->z / divisor);
 		}
 
 		bool operator==(const Point3 &p)

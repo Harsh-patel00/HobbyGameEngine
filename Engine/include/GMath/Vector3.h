@@ -76,7 +76,7 @@ struct Vector3 : public Point3<T>
 			return unitVec;
 		}
 
-		float GetLength()
+		float GetLength() const
 		{
 			return _length;
 		}
@@ -161,6 +161,11 @@ struct Vector3 : public Point3<T>
 		friend Vector3 operator*(const T &s, const Vector3 &v)
 		{
 			return Vector3(v.x * s, v.y * s, v.z * s);
+		}
+
+		Vector3 operator/(const T &divisor)
+		{
+			return Vector3(this->x / divisor, this->y / divisor, this->z / divisor);
 		}
 };
 

@@ -146,66 +146,66 @@ namespace GGraphics
 
 		static Mat4f GetProjectionMatrix(const Components::Camera &camera)
 		{
-			float l = camera.origin.x - (camera.cvv.width / 2);
-			float r = camera.origin.x + (camera.cvv.width / 2);
-			float b = camera.origin.y - (camera.cvv.height / 2);
-			float t = camera.origin.y + (camera.cvv.height / 2);
-			float n{};
-			float f{};
+			float left  = camera.origin.x - (camera.cvv.width / 2);
+			float right  = camera.origin.x + (camera.cvv.width / 2);
+			float bottom = camera.origin.y - (camera.cvv.height / 2);
+			float top    = camera.origin.y + (camera.cvv.height / 2);
+			float nearPlane{};
+			float farPlane{};
 			float size = camera.size;
 
 			if(camera.cvv.nearDist == 0)
 			{
-				 n = 0.1f;
+				nearPlane = 0.1f;
 			}
 			else
 			{
-				n = camera.cvv.nearDist;
+				nearPlane = camera.cvv.nearDist;
 			}
 
-			if(camera.cvv.farDist <= n)
+			if( camera.cvv.farDist <= nearPlane)
 			{
-				f = n + 0.1f;
+				farPlane = nearPlane + 0.1f;
 			}
 			else
 			{
-				f = camera.cvv.farDist;
+				farPlane = camera.cvv.farDist;
 			}
 
 			// ------------- PERSPECTIVE PROJECTION SPECIFIC---------------------
 
-			float a = camera.cvv.width / camera.cvv.height;
-			float fov = camera.fov; // horizontal fov
-			float s = n * std::tan(DEG2RAD(fov/2));
+			float aspect = camera.cvv.width / camera.cvv.height;
+			float fov    = camera.fov; // horizontal fov
+			float s = nearPlane * std::tan(DEG2RAD(fov / 2));
 
 			Mat4f projectionMatrix{};
 			switch (camera.type)
 			{
 				case Components::CameraType::ORTHOGRAPHIC:
 				{
-					projectionMatrix[0][0] = (1/a) / size;
+					projectionMatrix[0][0] = (1 / aspect) / size;
 
 					projectionMatrix[1][1] = 1/size;
 
-					projectionMatrix[2][2] = -2 / (f - n);
-					projectionMatrix[2][3] = -((f + n) / (f - n));
+					projectionMatrix[2][2] = -2 / (farPlane - nearPlane);
+					projectionMatrix[2][3] = -((farPlane + nearPlane) / (farPlane - nearPlane));
 
 					projectionMatrix[3][3] = 1;
 					return projectionMatrix;
 				}
 				case Components::CameraType::PERSPECTIVE:
 				{
-					t = camera.origin.y + (s / a);
-					b = camera.origin.y - (s / a);
-					r = camera.origin.x + s;
-					l = camera.origin.x - s;
+					top    = camera.origin.y + (s / aspect);
+					bottom = camera.origin.y - (s / aspect);
+					right  = camera.origin.x + s;
+					left  = camera.origin.x - s;
 
-					projectionMatrix[0][0] = 2 * n / (r - l);
+					projectionMatrix[0][0] = 2 * nearPlane / (right - left);
 
-					projectionMatrix[1][1] = 2 * n / (t - b);
+					projectionMatrix[1][1] = 2 * nearPlane / (top - bottom);
 
-					projectionMatrix[2][2] = - (f + n) / (f - n);
-					projectionMatrix[2][3] = - 2 * f * n / (f - n);
+					projectionMatrix[2][2] = - (farPlane + nearPlane) / (farPlane - nearPlane);
+					projectionMatrix[2][3] = - 2 * farPlane * nearPlane / (farPlane - nearPlane);
 
 					projectionMatrix[3][2] = -1;
 					projectionMatrix[3][3] = 0;
