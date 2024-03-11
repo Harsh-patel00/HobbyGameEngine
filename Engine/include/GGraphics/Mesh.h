@@ -71,6 +71,8 @@ namespace GGraphics
 				_vertices = m._vertices;
 				_indices = m._indices;
 				_tris = m._tris;
+				_triIndicesMap = m._triIndicesMap;
+				_drawMode = m._drawMode;
 			}
 
 			void SetTriangles(const std::vector<GGraphics::Primitives2d::Triangle> &tris)
@@ -198,9 +200,12 @@ namespace GGraphics
 				}
 				else if(_drawMode == MeshDrawMode::Lines)
 				{
+					//std::cout << "DrawMode :: Lines\n";
+
 					// for each index in indices
 					for(int i = 0; i < _indices.size() - 1; i += 2)
 					{
+						//std::cout << "Line :: Start :: " << _indices[i] << ", End :: " << _indices[i+1] << '\n';
 						GGraphics::Primitives2d::Line{_vertices[_indices[i]], _vertices[_indices[i+1]], window, color}.Draw();
 					}
 				}
