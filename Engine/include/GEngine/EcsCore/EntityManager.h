@@ -70,8 +70,8 @@ namespace ECS
 
 			   cm.AssignComponent<T>(entities[GetEntityIndex(id)]);
 
-//			   std::cout << "\nComponent assigned to : " << GetEntityName(id) <<
-//			   "\nMask : " << entities[GetEntityIndex(id)].mask << "\n";
+			   std::cout << "Component assigned to : " << GetEntityName(id) <<
+			   "\nMask : " << entities[GetEntityIndex(id)].mask << "\n";
 		   }
 
 		   // Remove assigned component from the entity

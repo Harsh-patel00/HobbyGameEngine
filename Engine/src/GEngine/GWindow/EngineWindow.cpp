@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <string>
 #include "GEngine/GWindow/EngineWindow.h"
 
 Action<void*> Events::EngineEventManager::WindowCreate{};
@@ -127,7 +128,7 @@ void GEngine::EngineWindow::StartMessageLoop()
 void GEngine::EngineWindow::OnUpdate()
 {
 	auto start = std::chrono::high_resolution_clock::now();
-	ClearBg(GGraphics::Color(GGraphics::ColorEnum::RED));
+	ClearBg(GGraphics::Color(GGraphics::ColorEnum::GRAY));
 
 	// Every frame should be drawn here!
 	Events::EngineEventManager::NotifyWindowUpdate(_elapsedTime.count());
@@ -221,18 +222,6 @@ void GEngine::EngineWindow::SwapBuffers()
 
 void GEngine::EngineWindow::DrawPixel(int x, int y, GGraphics::Color newColor)
 {
-	if(x <= 0)
-		x = 0;
-
-	if(y <= 0)
-		y = 0;
-
-	if(x >= _windowWidth)
-		x = _windowWidth - 1;
-
-	if(y >= _windowHeight)
-		y = _windowHeight - 1;
-
 	ColorPixel(x, y, newColor);
 }
 
@@ -242,9 +231,6 @@ void GEngine::EngineWindow::ColorPixel(int x, int y, GGraphics::Color newColor)
 
 	// Convert 3 decimals to hex
 	uint32_t color = (newColor.r << 16) ^ (newColor.g << 8) ^ newColor.b;
-
-	// Solved: BUG: Engine crash when the cube is moved to the left or bottom of the screen
-	//  Find out why value of x and y were negative here
 
 	pixel += y * _windowWidth + x; // Travel up by y, window width times + move forward by x
 

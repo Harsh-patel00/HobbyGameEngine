@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 project(GameEngine)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 #set(CMAKE_CXX_FLAGS "-municode")
+
 
 add_executable(${PROJECT_NAME}
         GameApplication/main.cpp

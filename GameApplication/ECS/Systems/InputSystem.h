@@ -44,7 +44,6 @@ class InputSystem : ECS::System
 				inputControl.right = true;
 			}
 
-
 			for (auto entId : em->EntitiesWithComponents<Components::InputControl>())
 			{
 				em->SetComponentValue<Components::InputControl>(inputControl, entId);

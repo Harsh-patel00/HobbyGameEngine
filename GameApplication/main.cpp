@@ -50,41 +50,44 @@ class Initiate
 		{
 			world = engine.GetGameWorld();
 			em = world->GetEcsManager();
-			engine.CreateEngineWindow(800, 600, "GaggedEngine");
 
 			CreateAndSetupEntities();
-
 			SetListener();
+
+			// Create window at last.
+			// Threading might cause it to create earlier causing entities to not show up.
+			engine.CreateEngineWindow(800, 600, "GaggedEngine");
 		}
 
 		void CreateAndSetupEntities()
 		{
 			std::cout << "Creating and Setting up entities...\n";
 
-			CreateCubeEntity();
-//			CreateCube2Entity();
-//			CreateCube3Entity();
-//			CreateCube4Entity();
+			//CreateCubeEntity();
+			CreateCube2Entity();
+			//CreateCube3Entity();
+			//CreateCube4Entity();
 
 			std::cout << "Creating and Setting up entities done.\n";
 		}
 
 		void CreateCubeEntity()
 		{
+			std::cout << "Creating a cube entity...\n";
+
 			cube = em->CreateEntity();
-			em->SetEntityName(cube, "Default Cube");
+			em->SetEntityName(cube, "Default Cube 1");
 			em->AssignComponent<Components::Transform>(cube);
 			em->AssignComponent<Components::MeshComponent>(cube);
-			em->AssignComponentAndSetDefaultValues<Components::InputControl>(cube2);
 
 			Components::MeshComponent mc{};
 
 			std::vector<Point3f> verts{
-//				Point3f(0, 0, 0),
-//				Point3f(0, 0, 1),
-//				Point3f(0.5f, 0, 1.5f),
-//				Point3f(1, 0, 1),
-//				Point3f(1, 0, 0)
+				//Point3f(0, 0, 0),
+				//Point3f(0, 0, 1),
+				//Point3f(0.5f, 0, 1.5f),
+				//Point3f(1, 0, 1),
+				//Point3f(1, 0, 0)
 				Point3f(-0.5f, 0, 0),
 				Point3f(0, 0.5f, 0),
 				Point3f(0.5f, 0, 0)
@@ -92,11 +95,11 @@ class Initiate
 
 			std::vector<int> indices{ 0, 1, 2 };
 
-//			mc.mesh = GGraphics::Mesh(verts, indices, GGraphics::MeshDrawMode::Triangle);
+			//mc.mesh = GGraphics::Mesh(verts, indices, GGraphics::MeshDrawMode::Triangle);
 			mc.mesh = GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
 
 			em->SetComponentValue<Components::Transform>({
-												{0, 0, 0},
+												{-2, 0, 0},
 											    {0, 0, 0},
 											    {1, 1, 1}}, cube);
 			em->SetComponentValue<Components::MeshComponent>(mc, cube);
@@ -105,7 +108,7 @@ class Initiate
 		void CreateCube2Entity()
 		{
 			cube2 = em->CreateEntity();
-			em->SetEntityName(cube2, "Default Cube");
+			em->SetEntityName(cube2, "Default Cube 2");
 			em->AssignComponent<Components::Transform>(cube2);
 			em->AssignComponent<Components::MeshComponent>(cube2);
 			em->AssignComponentAndSetDefaultValues<Components::InputControl>(cube2);
@@ -123,7 +126,7 @@ class Initiate
 		void CreateCube3Entity()
 		{
 			cube3 = em->CreateEntity();
-			em->SetEntityName(cube3, "Default Cube");
+			em->SetEntityName(cube3, "Default Cube 3");
 			em->AssignComponent<Components::Transform>(cube3);
 			em->AssignComponent<Components::MeshComponent>(cube3);
 
@@ -140,7 +143,7 @@ class Initiate
 		void CreateCube4Entity()
 		{
 			cube4 = em->CreateEntity();
-			em->SetEntityName(cube4, "Default Cube");
+			em->SetEntityName(cube4, "Default Cube 4");
 			em->AssignComponent<Components::Transform>(cube4);
 			em->AssignComponent<Components::MeshComponent>(cube4);
 
@@ -184,13 +187,22 @@ class Initiate
 
 		void UpdateSystems(double elapsedTime) const
 		{
-			is->OnUpdate(elapsedTime, world);
+			if(is != nullptr)
+			{
+				is->OnUpdate(elapsedTime, world);
+			}
 
-			ms->OnUpdate(elapsedTime, world);
+			if(ms != nullptr)
+			{
+				ms->OnUpdate(elapsedTime, world);
+			}
 
-			// Render System
-			// Always call at last so that every thing is rendered
-			rs->OnUpdate(elapsedTime, world);
+			if(rs != nullptr)
+			{
+				// Render System
+				// Always call at last so that every thing is rendered
+				rs->OnUpdate(elapsedTime, world);
+			}
 		}
 };
 
@@ -205,4 +217,5 @@ int main()
 	cv.wait(lk, []{ return isGameOver; });
 	std::cerr << "Main Exited!\n";
 
+	return 0;
 }

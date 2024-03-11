@@ -31,7 +31,8 @@ void GEngine::GameEngine::CreateEngineWindow(int windowWidth, int windowHeight, 
 
 	std::cout << "Creating & running window on thread :: " << _windowThread.get_id() << "\n";
 
-	_windowThread.detach();
+	// Wait for this thread to finish
+	_windowThread.join();
 }
 
 GEngine::GameEngine::GameEngine()

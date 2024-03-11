@@ -13,6 +13,7 @@
 #include "ECS/Components/MeshComponent.h"
 #include "ECS/Components/Camera.h"
 
+
 using Transform = Components::Transform;
 using Camera = Components::Camera;
 using MeshComponent = Components::MeshComponent;
@@ -21,478 +22,260 @@ using namespace GMath;
 
 class RenderSystem : ECS::System
 {
-	private:
-		GEngine::EngineWindow *pWindow{};
-		Camera _sceneCamera{};
-		float rotation{}, speed = 50;
-		GGraphics::Mesh clippedMesh{};
-	public:
-		explicit RenderSystem(const std::string &name) : System(name){}
+private:
+	GEngine::EngineWindow *pWindow{};
 
-	public:
-		void OnCreate(GEngine::GameWorld *world, GEngine::EngineWindow *window) override
+
+	Camera _sceneCamera{};
+
+
+	float rotation{}, speed = 50;
+
+
+public:
+	explicit RenderSystem( const std::string &name ) : System(name)
+	{}
+
+public:
+	void OnCreate( GEngine::GameWorld *world, GEngine::EngineWindow *window ) override
+	{
+		pWindow = window;
+
+		Events::EngineEventManager::WindowResized.AddListener([this]()
+																  {
+																  SetupSceneCamera(_sceneCamera);
+																  });
+
+		//for (auto entId : world->GetEcsManager()->EntitiesWithComponents<Transform, MeshComponent>())
+		//{
+		//	auto transform = world->GetEcsManager()->GetComponent<Transform>(entId);
+		//	auto meshComp = world->GetEcsManager()->GetComponent<MeshComponent>(entId);
+		//
+		//	ProcessMesh(meshComp->mesh, *transform);
+		//}
+	}
+
+	void OnUpdate( double dt, GEngine::GameWorld *world ) override
+	{
+		if ( _sceneCamera.showViewportBG )
 		{
-			pWindow = window;
-
-			Events::EngineEventManager::WindowResized.AddListener([this](){
-				SetupSceneCamera(_sceneCamera);
-			});
-
-//			for (auto entId : world->GetEcsManager()->EntitiesWithComponents<Transform, MeshComponent>())
-//			{
-//				auto transform = world->GetEcsManager()->GetComponent<Transform>(entId);
-//				auto meshComp = world->GetEcsManager()->GetComponent<MeshComponent>(entId);
-//
-//				ProcessMesh(meshComp->mesh, *transform);
-//			}
+			DrawViewportBG();
 		}
 
-		void OnUpdate(double dt, GEngine::GameWorld *world) override
+		rotation += (float) dt * speed;
+
+		if ( rotation > 359 )
 		{
-			if(_sceneCamera.showViewportBG)
-				DrawViewportBG();
+			rotation = 0;
+		}
 
-			rotation += (float) dt * speed;
+		int        entCount = 1;
+		for ( auto entId : world->GetEcsManager()->EntitiesWithComponents<Transform, MeshComponent>() )
+		{
+			auto transform = world->GetEcsManager()->GetComponent<Transform>(entId);
+			auto meshComp  = world->GetEcsManager()->GetComponent<MeshComponent>(entId);
+			Vec3f rotVec;
 
-			if(rotation > 359)
-				rotation = 0;
+			//entCount = 4;
 
-			int entCount = 1;
-			for (auto entId: world->GetEcsManager()->EntitiesWithComponents<Transform, MeshComponent>())
+			if ( entCount % 2 == 0 )
 			{
-				auto transform = world->GetEcsManager()->GetComponent<Transform>(entId);
-				auto meshComp = world->GetEcsManager()->GetComponent<MeshComponent>(entId);
-
-				Vec3f rotVec;
-
-				if(entCount % 2 == 0)
-				{
-					rotVec = Vec3f(0, rotation, 0);
-				}
-				else if(entCount % 3 == 0)
-				{
-					rotVec = Vec3f(0, 0, rotation);
-				}
-				else
-				{
-					rotVec = Vec3f(rotation, 0, 0);
-				}
-
-				if(entCount == 4)
-				{
-					rotVec = Vec3f(rotation, rotation, rotation);
-				}
-
-				world->GetEcsManager()->SetComponentValue<Transform>(
-						{transform->position,
-						 rotVec,
-						 transform->scale}, entId);
-
-				auto *meshCopy = new GGraphics::Mesh(meshComp->mesh);
-
-				/*{
-					std::cout << "Original Mesh :: \n";
-
-					for (auto tri: meshComp->mesh.GetTriangles())
-					{
-						tri.Print();
-					}
-				}*/
-
-				ProcessMesh(*meshCopy, *transform);
-
-				/*{
-					std::cout << "Transformed Mesh :: \n";
-
-					for (auto tri: meshComp->mesh.GetTriangles())
-					{
-						tri.Print();
-					}
-				}*/
-
-				entCount++;
+				rotVec = Vec3f(0, rotation, 0);
 			}
-		}
-
-		void DrawViewportBG()
-		{
-			for (int x = _sceneCamera.viewport.startX; x <= (_sceneCamera.viewport.startX + _sceneCamera.viewport.width); x++)
+			else if ( entCount % 3 == 0 )
 			{
-				for (int y = _sceneCamera.viewport.startY; y <= (_sceneCamera.viewport.startY + _sceneCamera.viewport.height); y++)
-				{
-					pWindow->DrawPixel(x, y, _sceneCamera.cameraBgColor);
-				}
+				rotVec = Vec3f(0, 0, rotation);
 			}
-		}
-
-		void ProcessMesh(GGraphics::Mesh& mesh, const Transform &transform)
-		{
-			// Convert from Local to World Position
-			// Convert from World to View
-			// Convert from View to Projection (-1, 1)
-			// Convert from Projection to Window
-
-			ConvertLocalToWorld(mesh, transform);
-			ConvertWorldToView(mesh);
-			ConvertViewToProjection(mesh);
-			// TODO: Perform clipping operations after projection
-			ConvertProjectionToViewport(mesh);
-
-			mesh.Draw(pWindow, GGraphics::Color(GGraphics::ColorEnum::GREEN));
-
-		}
-
-		void ConvertLocalToWorld(GGraphics::Mesh &mesh, const Transform &transform)
-		{
-			Mat4f T = GGraphics::Transformation::GetTranslationMatrix(transform.position);
-			Mat4f R = GGraphics::Transformation::GetRotationMatrix(transform.rotation);
-			Mat4f S = GGraphics::Transformation::GetScaleMatrix(transform.scale);
-
-			// Multiplication in order
-			// 1. Scale (S)
-			// 2. Rotate (R)
-			// 3. Translate (T)
-			Mat4f matL2W =  T * R * S;
-
-//			std::cout << "matL2W Mat :: " << matL2W << "\n";
-
-			auto modifiedVerts = mesh.GetVertices();
-			// For each point in mesh
-			for(Point3f &point : modifiedVerts)
+			else
 			{
-				// Apply Transformations
-				point = matL2W * point;
+				rotVec = Vec3f(rotation, 0, 0);
 			}
 
-			mesh.SetVertices(modifiedVerts);
-		}
-
-		void ConvertWorldToView(GGraphics::Mesh &mesh)
-		{
-			Mat4f w2v = GGraphics::Transformation::GetWorldToViewMatrix
-					(_sceneCamera.origin, _sceneCamera.lookAt, _sceneCamera.upDirection);
-
-//			std::cout << "w2v Mat :: " << w2v << "\n";
-
-			auto modifiedVerts = mesh.GetVertices();
-
-			for(Point3f &point : modifiedVerts)
+			if ( entCount == 4 )
 			{
-				point = w2v * point;
+				rotVec = Vec3f(rotation, rotation, rotation);
 			}
 
-			mesh.SetVertices(modifiedVerts);
-		}
+			world->GetEcsManager()
+				 ->SetComponentValue<Transform>({transform->position, transform->rotation /*rotVec*/,
+												 transform->scale}, entId);
 
-		void ConvertViewToProjection(GGraphics::Mesh &mesh)
-		{
-//			std::cout << "View >> Proj\n";
+			std::unique_ptr<GGraphics::Mesh> meshCopy = std::make_unique<GGraphics::Mesh>(meshComp->mesh);
 
-			Mat4f projectionMatrix = GGraphics::Transformation::GetProjectionMatrix(_sceneCamera);
+			/*{
+				std::cout << "Original Mesh :: \n";
 
-//			std::cout << "v2P Mat :: " << projectionMatrix << "\n";
-			auto modifiedVerts = mesh.GetVertices();
-			for (Point3f &point: modifiedVerts)
-			{
-				point = projectionMatrix * point;
-
-			}
-
-			mesh.SetVertices(modifiedVerts);
-		}
-
-		void ConvertProjectionToViewport(GGraphics::Mesh &mesh)
-		{
-//			std::cout << "Proj >> Viewport \n";
-
-			// Clip Polygon outside the view volume
-//			ClipPolygon(mesh);
-
-			// Clip Lines
-//			ClipLinesOfATrianlgle(mesh);
-
-//			std::vector<Point3f> newPoints{};
-//			std::vector<int> newIndices{};
-
-			auto verts = mesh.GetVertices();
-//			auto inds = mesh.GetIndices();
-
-			/*if( mesh.GetDrawMode() == GGraphics::MeshDrawMode::Lines )
-			{
-				for(int i = 0; i < inds.size() - 1; i += 2)
+				for (auto tri: meshComp->mesh.GetTriangles())
 				{
-					LineClippingAlgorithm(-1, -1, 1, 1, verts[inds[i]].x, verts[inds[i]].y, verts[inds[i+1]].x, verts[inds[i+1]].y);
+					tri.Print();
 				}
 			}*/
 
-			/*if( mesh.GetDrawMode() == GGraphics::MeshDrawMode::LineStrip ||
-				mesh.GetDrawMode() == GGraphics::MeshDrawMode::Triangle ||
-				mesh.GetDrawMode() == GGraphics::MeshDrawMode::Quad )
-			{
-				ClipPolygon(mesh);
+			ProcessMesh(*meshCopy, *transform);
+
+			/*{
+				std::cout << "Transformed Mesh :: \n";
+
+				for (auto tri: meshCopy->GetTriangles())
+				{
+					tri.Print();
+				}
 			}*/
 
-			for(Point3f &point : verts)
-			{
-					// Discard any point outside cvv
-					if (point.x <= -1)
-						point.x = -1;
-
-					if (point.y <= -1)
-						point.y = -1;
-
-					if (point.x >= 1)
-						point.x = 0.99999f;
-
-					if (point.y >= 1)
-						point.y = 0.99999f;
-
-
-					uint32_t xScreen = (point.x + 1) * 0.5f * _sceneCamera.viewport.width;
-					uint32_t yScreen = (point.y + 1) * 0.5f * _sceneCamera.viewport.height;
-
-//					if(xScreen <= 0 || yScreen <= 0)
-//					{
-//						std::cout << "XS :: " << xScreen << ", YS :: " << yScreen << "\n";
-//					}
-
-					// convert to raster space and mark the position of the vertex in the image with a simple dot
-					point.x = xScreen + _sceneCamera.viewport.startX;
-					point.y = yScreen + _sceneCamera.viewport.startY;
-
-//					newPoints.push_back(point);
-				}
-
-//			for (int i = 0; i < newPoints.size(); ++i)
-//			{
-//				newIndices.push_back(i);
-//			}
-
-//			// To complete the polygon, add the first index at last position too
-//			newIndices.push_back(0);
-//
-//			clippedMesh.SetVertices(newPoints);
-//			clippedMesh.SetIndices(newIndices, GGraphics::MeshDrawMode::LineStrip);
-
-			mesh.SetVertices(verts);
+			entCount++;
 		}
+	}
 
-		void ApplyPolygonClipingAlgorithm(int xmin, int ymin, int xmax, int ymax, std::vector<Point3f> polygonPoints)
+	// For debugging only
+	void DrawViewportBG()
+	{
+
+		for ( int x = _sceneCamera.viewport.startX;
+			  x <= (_sceneCamera.viewport.startX + _sceneCamera.viewport.width);
+			  x++ )
 		{
-			enum class Sides
+			for ( int y = _sceneCamera.viewport.startY;
+				  y <= (_sceneCamera.viewport.startY + _sceneCamera.viewport.height);
+				  y++ )
 			{
-					Left    = 0,
-					Right   = 1,
-					Top     = 2,
-					Bottom = 3
-			};
-
-			for (int i = 0; i < 4; ++i)
-			{
-				switch ((Sides)i)
-				{
-					case Sides::Left:
-					{
-						
-					}
-						break;
-					case Sides::Right:
-						break;
-					case Sides::Top:
-						break;
-					case Sides::Bottom:
-						break;
-				}
+				pWindow->DrawPixel(x, y, _sceneCamera.cameraBgColor);
 			}
-
-			auto OutsideInsideCheck = []()
-			{
-				return -1; // Outside
-				return 1; // Inside
-			};
-
-
-
-
-
 		}
+	}
 
-		void ClipPolygon(GGraphics::Mesh &mesh)
+	void ProcessMesh( GGraphics::Mesh &mesh, const Transform &transform )
+	{
+		// Convert from Local to World Position
+		// Convert from World to View
+		// Convert from View to Projection (Camera Frustum is CVV here)
+		// Convert from Projection to Window (CVV is a rectangle which maps to screen) ([-1, 1] -> [screen size])
+
+		// Part of Vertex Shader
+		ConvertLocalToWorld(mesh, transform);
+		ConvertWorldToView(mesh);
+
+		// Part of Geometry Shader
+		// TODO: Perform cullling operations before projection
+		//CullBackfaces(mesh);
+		ConvertViewToProjection(mesh);
+		// TODO: Perform clipping operations after projection
+
+		// Viewport is also called CVV
+		// Rasterize
+
+		ConvertProjectionToViewport(mesh);
+
+		// Part of Fragment Shader
+		mesh.Draw(pWindow, GGraphics::Color(GGraphics::ColorEnum::GREEN));
+	}
+
+	void ConvertLocalToWorld( GGraphics::Mesh &mesh, const Transform &transform )
+	{
+		Mat4f T = GGraphics::Transformation::GetTranslationMatrix(transform.position);
+		Mat4f R = GGraphics::Transformation::GetRotationMatrix(transform.rotation);
+		Mat4f S = GGraphics::Transformation::GetScaleMatrix(transform.scale);
+
+		// Multiplication in order
+		// 1. Scale (S)
+		// 2. Rotate (R)
+		// 3. Translate (T)
+		Mat4f matL2W = T * R * S;
+
+		//			std::cout << "matL2W Mat :: " << matL2W << "\n";
+
+		auto modifiedVerts = mesh.GetVertices();
+		// For each point in mesh
+		for ( Point3f &point : modifiedVerts )
 		{
-			std::vector<int> meshIndices = mesh.GetIndices();
-			std::vector<Point3f> meshVertices = mesh.GetVertices();
-
-			/*std::vector<Point3f*> polygonPoints{};
-
-			// for each index in indices
-			for(int i = 0; i < meshIndices.size(); i++)
-			{
-				polygonPoints.push_back(&meshVertices[meshIndices[i]]);
-
-				if(i % 3 == 2)
-				{*/
-					// At this point polygonPoints contains a triangle
-					ApplyPolygonClipingAlgorithm(-1, -1, 1, 1, meshVertices);
-			/*	}
-			}*/
+			// Apply Transformations
+			point = matL2W * point;
 		}
+		mesh.SetVertices(modifiedVerts);
+	}
 
-		void ClipLinesOfATrianlgle(GGraphics::Mesh &mesh)
+	void ConvertWorldToView( GGraphics::Mesh &mesh )
+	{
+		Mat4f w2v = GGraphics::Transformation::GetWorldToViewMatrix(_sceneCamera.origin, _sceneCamera.lookAt, _sceneCamera.upDirection);
+
+		//			std::cout << "w2v Mat :: " << w2v << "\n";
+
+		auto modifiedVerts = mesh.GetVertices();
+
+		for ( Point3f &point : modifiedVerts )
 		{
-			auto meshIndices = mesh.GetIndices();
-			std::vector<Point3f> meshVertices = mesh.GetVertices();
-
-			// Clip lines
-			GGraphics::Primitives2d::Triangle tri{};
-			// for each index in indices
-			for(int i = 0; i < meshIndices.size(); i++)
-			{
-				tri.points[i%3] = meshVertices[meshIndices[i]];
-
-				if(i%3 == 2)
-				{
-//					for (int j = 0; j < 3; ++j)
-//					{
-//						LineClippingAlgorithm(-1, -1, 1, 1, tri.points[j%3].x, tri.points[j%3].y, tri.points[(j+1)%3].x, tri.points[(j+1)%3].y);
-//						(*meshVertices)[meshIndices[i - j]] = tri.points[(i - j)%3];
-//					}
-
-					LineClippingAlgorithm(-1, -1, 1, 1, tri.points[(i - 2) % 3].x, tri.points[(i - 2) % 3].y,
-					                      tri.points[(i - 1) % 3].x, tri.points[(i - 1) % 3].y);
-					LineClippingAlgorithm(-1, -1, 1, 1, tri.points[(i - 1) % 3].x, tri.points[(i - 1) % 3].y,
-					                      tri.points[(i - 0) % 3].x, tri.points[(i - 0) % 3].y);
-					LineClippingAlgorithm(-1, -1, 1, 1, tri.points[(i - 0) % 3].x, tri.points[(i - 0) % 3].y,
-					                      tri.points[(i - 2) % 3].x, tri.points[(i - 2) % 3].y);
-
-					meshVertices[meshIndices[i - 2]] = tri.points[(i - 2)%3];
-					meshVertices[meshIndices[i - 1]] = tri.points[(i - 1)%3];
-					meshVertices[meshIndices[i - 0]] = tri.points[(i - 0)%3];
-				}
-			}
-
-			mesh.SetVertices(meshVertices);
+			point = w2v * point;
 		}
 
-		void SetupSceneCamera(Camera &camera)
+		mesh.SetVertices(modifiedVerts);
+	}
+
+	void ConvertViewToProjection( GGraphics::Mesh &mesh )
+	{
+		//			std::cout << "View >> Proj\n";
+
+		Mat4f projectionMatrix = GGraphics::Transformation::GetProjectionMatrix(_sceneCamera);
+
+		//			std::cout << "v2P Mat :: " << projectionMatrix << "\n";
+		auto          modifiedVerts = mesh.GetVertices();
+		for ( Point3f &point : modifiedVerts )
 		{
-			camera.origin = {0, 0, -2};
-			camera.lookAt = Vec3f(0, 0, 1);
-			camera.upDirection = Vec3f(0, 1, 0);
-
-			camera.type = Components::CameraType::PERSPECTIVE;
-
-			camera.viewport = {0, 0, pWindow->GetWidth(), pWindow->GetHeight()};
-			camera.cvv = {(float)camera.viewport.width, (float)camera.viewport.height, 5, 15};
-
-			camera.size = 1;
-			camera.fov = 60;
-
-			// TODO: Look into this...
-			//  Changing this to true, causes heavy performance penalty
-			camera.showViewportBG = false;
-			camera.cameraBgColor = GGraphics::Color(GGraphics::ColorEnum::GRAY);
+			point = projectionMatrix * point;
+			//std::cout << "Projected Point :: " << point << '\n';
 		}
 
-		// Liang–Barsky line clipping algorithm [Ref: https://en.wikipedia.org/wiki/Liang%E2%80%93Barsky_algorithm]
-		void LineClippingAlgorithm(float xmin, float ymin, float xmax, float ymax, float &x1, float &y1, float &x2, float &y2)
+		mesh.SetVertices(modifiedVerts);
+	}
+
+	void ConvertProjectionToViewport( GGraphics::Mesh &mesh )
+	{
+		//			std::cout << "Proj >> Viewport \n";
+
+		auto verts = mesh.GetVertices();
+
+		for ( Point3f &point : verts )
 		{
-			auto maxi = [](const float arr[],int n)
-					{
-				float m = 0;
-				for (int i = 0; i < n; ++i)
-					if (m < arr[i])
-						m = arr[i];
-				return m;
-			};
-
-			auto mini = [](const float arr[], int n) {
-				float m = 1;
-				for (int i = 0; i < n; ++i)
-					if (m > arr[i])
-						m = arr[i];
-				return m;
-			};
-
-
-			// defining variables
-			float p1 = -(x2 - x1);
-			float p2 = -p1;
-			float p3 = -(y2 - y1);
-			float p4 = -p3;
-
-			float q1 = x1 - xmin;
-			float q2 = xmax - x1;
-			float q3 = y1 - ymin;
-			float q4 = ymax - y1;
-
-			float posarr[5], negarr[5];
-			int posind = 1, negind = 1;
-			posarr[0] = 1;
-			negarr[0] = 0;
-
-			if((p1 == 0 && q1 < 0) || (p2 == 0 && q2 < 0) || (p3 == 0 && q3 < 0) || (p4 == 0 && q4 < 0))
-			{
-//				std::cout << "Lines is parallel to clipping window!\n";
-				return;
-			}
-			if(p1 != 0)
-			{
-				float r1 = q1 / p1;
-				float r2 = q2 / p2;
-				if(p1 < 0)
-				{
-					negarr[negind++] = r1; // for negative p1, add it to negative array
-					posarr[posind++] = r2; // and add p2 to positive array
-				}
-				else
-				{
-					negarr[negind++] = r2;
-					posarr[posind++] = r1;
-				}
-			}
-			if(p3 != 0)
-			{
-				float r3 = q3 / p3;
-				float r4 = q4 / p4;
-				if(p3 < 0)
-				{
-					negarr[negind++] = r3;
-					posarr[posind++] = r4;
-				}
-				else
-				{
-					negarr[negind++] = r4;
-					posarr[posind++] = r3;
-				}
-			}
-
-			float xn1, yn1, xn2, yn2;
-			float rn1, rn2;
-			rn1 = maxi(negarr, negind); // maximum of negative array
-			rn2 = mini(posarr, posind); // minimum of positive array
-
-			if(rn1 > rn2)
-			{ // reject
-//				std::cout << "Lines is outside the clipping window!\n";
-				return;
-			}
-
-			xn1 = x1 + p2 * rn1;
-			yn1 = y1 + p4 * rn1; // computing new points
-
-			xn2 = x1 + p2 * rn2;
-			yn2 = y1 + p4 * rn2;
-
-			x1 = xn1;
-			y1 = yn1;
-			x2 = xn2;
-			y2 = yn2;
-
-//			line(xn1, yn1, xn2, yn2); // the drawing the new line
-
-			// line(x1, y1, xn1, yn1); // 1st Discarded line
-			// line(x2, y2, xn2, yn2); // 2nd Discarded line
+			ConvertPointToScreenSpace(point);
 		}
+
+		mesh.SetVertices(verts);
+	}
+
+	void SetupSceneCamera( Camera &camera )
+	{
+		camera.origin      = {0, 0, -10};
+		camera.lookAt      = Vec3f(0, 0, 1);
+		camera.upDirection = Vec3f(0, 1, 0);
+
+		camera.type = Components::CameraType::PERSPECTIVE;
+
+		auto viewportWidth  = pWindow->GetWidth();
+		auto viewportHeight = pWindow->GetHeight();
+
+		camera.viewport = {0, 0, viewportWidth, viewportHeight};
+		camera.cvv      = {(float) camera.viewport.width, (float) camera.viewport.height, 5, 15};
+
+		camera.size = 1;
+		camera.fov  = 60;
+
+		// TODO: Look into this...
+		//  Changing this to true, causes heavy performance penalty
+		camera.showViewportBG = false;
+		camera.cameraBgColor  = GGraphics::Color(GGraphics::ColorEnum::RED);
+	}
+
+	void ConvertPointToScreenSpace(Point3f &point) const
+	{
+		//Point3f convertedPoint = point;
+
+		float xScreen = (point.x + 1.f) * 0.5f * (float) _sceneCamera.viewport.width;
+		float yScreen = (point.y + 1.f) * 0.5f * (float) _sceneCamera.viewport.height;
+
+
+		// convert to raster space and mark the position of the vertex in the image with a simple dot
+		point.x = xScreen + (float) _sceneCamera.viewport.startX;
+		point.y = yScreen + (float) _sceneCamera.viewport.startY;
+	}
+
 };
 
 #endif //GAMEENGINE_RENDERSYSTEM_H
