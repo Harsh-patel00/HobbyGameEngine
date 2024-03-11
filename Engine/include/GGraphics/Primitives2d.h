@@ -38,9 +38,18 @@ namespace GGraphics
 					   // UseWu();
 				   }
 
+				   void Draw(GGraphics::Color lineColor)
+				   {
+					   color = lineColor;
+					   // Implement different algorithms in different functions & use them here
+					   // TODO: Add Anti-Aliasing algorithm for line
+					   UseBresenham();
+					   // UseWu();
+				   }
+
 			   private:
 				   GEngine::EngineWindow *pDrawWindow{};
-				   Color color{};
+				   Color color{GGraphics::ColorEnum::BLACK};
 
 			   private:
 				   // This algorithm eliminates all the floating point operations and divisions
@@ -59,7 +68,13 @@ namespace GGraphics
 
 					   while(true)
 					   {
-						   pDrawWindow->DrawPixel(x0, y0, color);
+						   // If user inputs vertices values outside of the range [-1, 1],
+						   // then screen space coordinates will overflow from the memory buffer range.
+						   // Ignore those out of range values
+						   if(x0 >= 0 && x0 < pDrawWindow->GetWidth() && y0 >= 0 && y0 < pDrawWindow->GetHeight())
+						   {
+							   pDrawWindow->DrawPixel(x0, y0, color);
+						   }
 
 						   if(x0 == x1 && y0 == y1) break;
 
@@ -209,6 +224,7 @@ namespace GGraphics
 		   struct Triangle
 		   {
 			   Point3f points[3] {}; // This array will contain 3 points
+			   GMath::Vec3f faceNormal{}; // This is the face normal of the triangle
 
 			   Triangle() = default;
 			   Triangle(Point3f p1, Point3f p2, Point3f p3)
@@ -216,13 +232,53 @@ namespace GGraphics
 				   points[0] = p1;
 				   points[1] = p2;
 				   points[2] = p3;
+
+				   CalculateFaceNormals();
 			   }
 
-			   void Draw(GEngine::EngineWindow *window, Color lineColor)
+			   void SetDrawColor(GGraphics::Color drawColor)
 			   {
-				   Line{points[0], points[1], window, lineColor}.Draw();
-				   Line{points[1], points[2], window, lineColor}.Draw();
-				   Line{points[2], points[0], window, lineColor}.Draw();
+				   _triangleDrawColor = drawColor;
+			   }
+
+			   void Draw(GEngine::EngineWindow *window, Color lineColor, bool debug = false)
+			   {
+				   RecalculateNormal();
+				   if(debug)
+				   {
+					   Line{points[0], points[1], window, GGraphics::Color(GGraphics::ColorEnum::RED)}.Draw();
+					   Line{points[1], points[2], window, GGraphics::Color(GGraphics::ColorEnum::GREEN)}.Draw();
+					   Line{points[2], points[0], window, GGraphics::Color(GGraphics::ColorEnum::BLUE)}.Draw();
+				   }
+				   else
+				   {
+					   Line{points[0], points[1], window, lineColor}.Draw();
+					   Line{points[1], points[2], window, lineColor}.Draw();
+					   Line{points[2], points[0], window, lineColor}.Draw();
+				   }
+			   }
+
+			   // Set the face normal explicitly
+			   void SetFaceNormals(GMath::Vec3f normal)
+			   {
+				   faceNormal = normal;
+			   }
+
+			   // This just recalculates the face normal
+			   void RecalculateNormal()
+			   {
+				   CalculateFaceNormals();
+			   }
+
+			   void ShowFaceNormal()
+			   {
+				   CalculateFaceNormals();
+
+				   GMath::Vec3f avgPos((points[0] + points[1] + points[2]) / 3);
+
+				   Line line1(avgPos.Normalize(), faceNormal);
+
+				   line1.Draw(GGraphics::Color(GGraphics::ColorEnum::GREEN));
 			   }
 
 			   void Print()
@@ -231,6 +287,34 @@ namespace GGraphics
 				   std::cout << "Point3[1] :: " << points[1] << "\n";
 				   std::cout << "Point3[2] :: " << points[2] << "\n";
 			   }
+
+			   bool operator== (GGraphics::Primitives2d::Triangle &tri) const
+			   {
+				   return points[0] == tri.points[0] && points[1] == tri.points[1] && points[2] == tri.points[2];
+			   }
+
+		   private:
+			   // Calculate the face normal internally when the triangle is created
+			   void CalculateFaceNormals()
+			   {
+				   Line line1(points[0], points[1]);
+				   Line line2(points[2], points[0]);
+
+				   GMath::Vec3f vec1(line1.end - line1.start);
+				   GMath::Vec3f vec2(line2.start - line2.end);
+
+				   faceNormal = vec1.Cross(vec2);
+
+				   //std::cout << "Face Normal Raw :: " << faceNormal << '\n';
+
+				   faceNormal.Normalize();
+
+				   //std::cout << "Face Normal Normalized :: " << faceNormal << '\n';
+
+			   }
+
+		   private:
+			   GGraphics::Color _triangleDrawColor{GGraphics::Color(GGraphics::ColorEnum::YELLOW)};
 		   };
    };
 }
