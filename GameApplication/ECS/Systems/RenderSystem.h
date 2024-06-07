@@ -131,11 +131,11 @@ public:
 	{
 
 		for ( int x = _sceneCamera.viewport.startX;
-			  x <= (_sceneCamera.viewport.startX + _sceneCamera.viewport.width);
+			  x < (_sceneCamera.viewport.startX + _sceneCamera.viewport.width);
 			  x++ )
 		{
 			for ( int y = _sceneCamera.viewport.startY;
-				  y <= (_sceneCamera.viewport.startY + _sceneCamera.viewport.height);
+				  y < (_sceneCamera.viewport.startY + _sceneCamera.viewport.height);
 				  y++ )
 			{
 				pWindow->DrawPixel(x, y, _sceneCamera.cameraBgColor);
@@ -187,8 +187,13 @@ public:
 		// For each point in mesh
 		for ( Point3f &point : modifiedVerts )
 		{
+			//std::cout << "Before L2W :: " << point << '\n';
+
 			// Apply Transformations
 			point = matL2W * point;
+
+			//std::cout << "After L2W :: " << point << '\n';
+
 		}
 		mesh.SetVertices(modifiedVerts);
 	}
@@ -203,7 +208,10 @@ public:
 
 		for ( Point3f &point : modifiedVerts )
 		{
+			//std::cout << "Before W2V :: " << point << '\n';
 			point = w2v * point;
+			//std::cout << "After W2V :: " << point << '\n';
+
 		}
 
 		mesh.SetVertices(modifiedVerts);
@@ -219,8 +227,9 @@ public:
 		auto          modifiedVerts = mesh.GetVertices();
 		for ( Point3f &point : modifiedVerts )
 		{
+			std::cout << "Before V2P :: " << point << '\n';
 			point = projectionMatrix * point;
-			//std::cout << "Projected Point :: " << point << '\n';
+			std::cout << "After V2P :: " << point << '\n';
 		}
 
 		mesh.SetVertices(modifiedVerts);
@@ -242,38 +251,41 @@ public:
 
 	void SetupSceneCamera( Camera &camera )
 	{
-		camera.origin      = {0, 0, -10};
-		camera.lookAt      = Vec3f(0, 0, 1);
+		// This will be editable my mouse inputs.
+		camera.origin      = {0, 0, -1};
+		camera.lookAt      = Vec3f(0, 0, 0);
 		camera.upDirection = Vec3f(0, 1, 0);
 
-		camera.type = Components::CameraType::PERSPECTIVE;
+		camera.type = Components::CameraType::ORTHOGRAPHIC;
 
 		auto viewportWidth  = pWindow->GetWidth();
 		auto viewportHeight = pWindow->GetHeight();
 
 		camera.viewport = {0, 0, viewportWidth, viewportHeight};
-		camera.cvv      = {(float) camera.viewport.width, (float) camera.viewport.height, 5, 15};
+		camera.cvv      = {(float) camera.viewport.width, (float) camera.viewport.height, 1, 100};
 
-		camera.size = 1;
-		camera.fov  = 60;
+		camera.size = 1; // For orthographic camera
+		camera.fov  = 90;// For Perspective camera
 
 		// TODO: Look into this...
 		//  Changing this to true, causes heavy performance penalty
-		camera.showViewportBG = false;
+		camera.showViewportBG = true;
 		camera.cameraBgColor  = GGraphics::Color(GGraphics::ColorEnum::RED);
 	}
 
 	void ConvertPointToScreenSpace(Point3f &point) const
 	{
-		//Point3f convertedPoint = point;
+		std::cout << "Point to Rasterize :: " << point << '\n';
 
 		float xScreen = (point.x + 1.f) * 0.5f * (float) _sceneCamera.viewport.width;
 		float yScreen = (point.y + 1.f) * 0.5f * (float) _sceneCamera.viewport.height;
 
-
 		// convert to raster space and mark the position of the vertex in the image with a simple dot
 		point.x = xScreen + (float) _sceneCamera.viewport.startX;
 		point.y = yScreen + (float) _sceneCamera.viewport.startY;
+
+		std::cout << "Rasterized Point :: " << point << '\n';
+
 	}
 
 };

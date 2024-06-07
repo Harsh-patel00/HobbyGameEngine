@@ -183,15 +183,29 @@ namespace GGraphics
 			{
 				case Components::CameraType::ORTHOGRAPHIC:
 				{
-					projectionMatrix[0][0] = (1 / aspect) / size;
+					//projectionMatrix[0][0] = (1 / aspect) / size;
+					//
+					//projectionMatrix[1][1] = 1/size;
+					//
+					//projectionMatrix[2][2] = -2 / (farPlane - nearPlane);
+					//projectionMatrix[2][3] = -((farPlane + nearPlane) / (farPlane - nearPlane));
+					//
+					//projectionMatrix[3][3] = 1;
+					//return projectionMatrix;
 
-					projectionMatrix[1][1] = 1/size;
+					projectionMatrix[0][0] = 2 / (right - left);
+
+					projectionMatrix[1][1] = 2 / (top - bottom);
 
 					projectionMatrix[2][2] = -2 / (farPlane - nearPlane);
-					projectionMatrix[2][3] = -((farPlane + nearPlane) / (farPlane - nearPlane));
 
+					projectionMatrix[3][0] = -((right + left)/(right - left));
+					projectionMatrix[3][1] = -((top + bottom)/(top - bottom));
+					projectionMatrix[3][2] = -((farPlane + nearPlane)/(farPlane - nearPlane));
 					projectionMatrix[3][3] = 1;
+
 					return projectionMatrix;
+
 				}
 				case Components::CameraType::PERSPECTIVE:
 				{
