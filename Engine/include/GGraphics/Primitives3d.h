@@ -41,7 +41,7 @@ namespace GGraphics
    GMath::Point3f Primitives3d::Cube::G{-0.5, 0.5, 0.5};
    GMath::Point3f Primitives3d::Cube::H{-0.5, -0.5, 0.5};
 
-   //                                                      0, 1, 2, 3, 4, 5, 6, 7
+   //                                              0, 1, 2, 3, 4, 5, 6, 7
    GMath::Point3f Primitives3d::Cube::vertices[8] {A, B, C, D, E, F, G, H};
 
    std::vector<int> Primitives3d::Cube::indices

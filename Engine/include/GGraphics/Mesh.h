@@ -66,14 +66,6 @@ namespace GGraphics
 				SetIndices(indices, drawMode);
 				GenerateTris();
 			}
-			Mesh(Mesh &m)
-			{
-				_vertices = m._vertices;
-				_indices = m._indices;
-				_tris = m._tris;
-				_triIndicesMap = m._triIndicesMap;
-				_drawMode = m._drawMode;
-			}
 
 			void SetTriangles(const std::vector<GGraphics::Primitives2d::Triangle> &tris)
 			{
@@ -233,6 +225,7 @@ namespace GGraphics
 		   void GenerateTris()
 		   {
 			   _tris.clear();
+			   _triIndicesMap.clear();
 
 			   GGraphics::Primitives2d::Triangle tri{};
 			   std::vector<int> indicesForTheTriangle{};
@@ -246,7 +239,7 @@ namespace GGraphics
 				   if(i%3 == 2)
 				   {
 					   _tris.push_back(tri);
-					   _triIndicesMap.insert({_tris.size(), indicesForTheTriangle});
+					   _triIndicesMap.insert(std::pair<int, std::vector<int>>(_tris.size() - 1, indicesForTheTriangle));
 					   indicesForTheTriangle = {};
 					   tri = {};
 				   }

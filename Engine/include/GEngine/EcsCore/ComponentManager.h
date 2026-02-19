@@ -21,7 +21,7 @@ namespace ECS
 	   explicit ComponentPool(size_t elementSize)
 	   {
 		   ElementSize = elementSize;
-		   ComponentData = new char[elementSize * MAX_ENTITIES]{0};
+		   ComponentData = new char[elementSize * MAX_ENTITIES];
 	   }
 
 	   ~ComponentPool()
@@ -71,6 +71,14 @@ namespace ECS
 			   {
 				   components.resize(componentId + 1, nullptr);
 				   components[componentId] = new ComponentPool(sizeof(T));
+				   
+				   // Construct all component instances in the pool using placement new
+				   ComponentPool* pool = components[componentId];
+				   for (size_t i = 0; i < MAX_ENTITIES; ++i)
+				   {
+					   new (pool->Get(i)) T();
+				   }
+				   
 				   ent.mask.set(GetComponentId<T>());
 			   }
 			   //Only set the entity mask as the component is already in the list

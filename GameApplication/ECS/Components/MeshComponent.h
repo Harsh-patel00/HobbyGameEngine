@@ -12,7 +12,7 @@ namespace Components
 
    struct MeshComponent
    {
-	   GGraphics::Mesh mesh;
+	   GGraphics::Mesh mesh{};
    };
 
 #endif //GAMEENGINE_MESHCOMPONENT_H

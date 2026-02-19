@@ -18,11 +18,6 @@ class Action
 		// This maps every function with its hash (This way function is easier to find)
 		std::map<std::size_t, FuncType> dictOfAllFunctionsWithHash{};
 
-	public:
-		// Whenever a new action is created, ActionID is incremented
-		Action() = default;
-		~Action()= default;
-
 	private:
 		// Create a function's hash
 		std::size_t GetFunctionHash(FuncType *func)
@@ -58,10 +53,8 @@ class Action
 				return;
 			}
 
-			auto dictCopy = dictOfAllFunctionsWithHash;
-
 			// Invoke all functions which are registered
-			for (auto item : dictCopy)
+			for (auto item : dictOfAllFunctionsWithHash)
 			{
 				auto it = dictOfAllFunctionsWithHash.find(item.first);
 
@@ -79,13 +72,16 @@ class Action
 		// Add a function as a listener to an Action
 		void AddListener(FuncType func)
 		{
+			
+			auto hash = GetFunctionHash(&func);
+
 			// Checking if the function is already a listener
-			auto it = dictOfAllFunctionsWithHash.find(GetFunctionHash(&func));
+			auto it = dictOfAllFunctionsWithHash.find(hash);
 
 			// If not, get the hash and add it to the map
 			if(it == dictOfAllFunctionsWithHash.end())
 			{
-				dictOfAllFunctionsWithHash.insert(std::pair<std::size_t, FuncType>(GetFunctionHash(&func), func));
+				dictOfAllFunctionsWithHash.insert(std::pair<std::size_t, FuncType>(hash, func));
 			}
 			else
 			{
@@ -97,15 +93,18 @@ class Action
 		// Remove the function as a listener of an Action
 		void RemoveListener(FuncType func)
 		{
+
+			auto hash = GetFunctionHash(&func);
+
 			// Find the function in the map
-			auto it = dictOfAllFunctionsWithHash.find(GetFunctionHash(func));
+			auto it = dictOfAllFunctionsWithHash.find(hash);
 
 			// If function is already registered
 			// Then remove, the function from the list of that particular action's functions
 			if(it != dictOfAllFunctionsWithHash.end())
 			{
 				// Remove the function from the map, as it's no longer a valid function
-				dictOfAllFunctionsWithHash.erase(GetFunctionHash(func));
+				dictOfAllFunctionsWithHash.erase(hash);
 				std::cout << "Function un-subscribed successfully\n";
 			}
 			else

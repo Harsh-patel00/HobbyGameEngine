@@ -11,10 +11,6 @@
 #include "ECS/Systems/MoveSystem.h"
 #include "ECS/Systems/InputSystem.h"
 
-bool isGameOver = false;
-std::condition_variable cv;
-std::mutex cv_m;
-
 class Initiate
 {
 	private:
@@ -63,10 +59,10 @@ class Initiate
 		{
 			std::cout << "Creating and Setting up entities...\n";
 
-			//CreateCubeEntity();
+			CreateCubeEntity();
 			CreateCube2Entity();
-			//CreateCube3Entity();
-			//CreateCube4Entity();
+			CreateCube3Entity();
+			CreateCube4Entity();
 
 			std::cout << "Creating and Setting up entities done.\n";
 		}
@@ -113,13 +109,13 @@ class Initiate
 			em->AssignComponent<Components::MeshComponent>(cube2);
 			em->AssignComponentAndSetDefaultValues<Components::InputControl>(cube2);
 
-			Components::MeshComponent mc{};
-			mc.mesh = GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
-
 			em->SetComponentValue<Components::Transform>({
 												{0, 0, 0},
-											    {0, 0, 0},
-											    {1, 1, 1}}, cube2);
+												{0, 0, 0},
+												{1, 1, 1} }, cube2);
+
+			Components::MeshComponent mc;
+			mc.mesh = GGraphics::Mesh(GGraphics::PRIMITIVE3DTYPE::Cube);
 			em->SetComponentValue<Components::MeshComponent>(mc, cube2);
 		}
 
@@ -175,11 +171,6 @@ class Initiate
 		{
 			std::cout << "Setting up listeners...\n";
 
-			Events::EngineEventManager::WindowClosed.AddListener([](){
-				isGameOver = true;
-				cv.notify_all();
-			});
-
 			Events::EngineEventManager::WindowCreate.AddListener([this](void* windowRef){ CreateAndSetupSystems(windowRef); });
 
 			Events::EngineEventManager::WindowUpdate.AddListener([this](double elapsedTime){ UpdateSystems(elapsedTime); });
@@ -211,11 +202,6 @@ int main()
 	std::cout << "Main Thread ID :: " << std::this_thread::get_id() << "\n";
 
 	Initiate initiate{};
-
-	std::unique_lock<std::mutex> lk(cv_m);
-	std::cerr << "Waiting on main thread... \n";
-	cv.wait(lk, []{ return isGameOver; });
-	std::cerr << "Main Exited!\n";
 
 	return 0;
 }

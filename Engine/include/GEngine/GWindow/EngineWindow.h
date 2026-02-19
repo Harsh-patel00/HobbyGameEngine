@@ -19,6 +19,7 @@
 
 #include <thread>
 #include <condition_variable>
+#include <chrono>
 
 #include "BaseWindow.h"
 #include "GGraphics/Color.h"

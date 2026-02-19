@@ -109,7 +109,7 @@ void GEngine::EngineWindow::StartMessageLoop()
 	std::cout << "Listening for window messages...\n\n";
 	// Run the message loop.
 	MSG msg = { };
-	while(!_isWindowClosed) // This loop will determine our FPS
+	while(!_isWindowClosed)
 	{
 		if(GetMessage(&msg, nullptr, 0, 0))
 		{
@@ -117,7 +117,7 @@ void GEngine::EngineWindow::StartMessageLoop()
 			DispatchMessage(&msg);
 		}
 
-		OnUpdate();
+		OnUpdate(); // This loop will determine our FPS
 
 		std::string finalWindowTitle = _windowTitle + " :: FPS :: " + std::to_string(1/_elapsedTime.count());
 		std::wstring finalWindowTitleW = std::wstring(finalWindowTitle.begin(), finalWindowTitle.end());
@@ -133,9 +133,10 @@ void GEngine::EngineWindow::OnUpdate()
 	// Every frame should be drawn here!
 	Events::EngineEventManager::NotifyWindowUpdate(_elapsedTime.count());
 
-	SwapBuffers();
 	auto end = std::chrono::high_resolution_clock::now();
 	_elapsedTime = end - start;
+	
+	SwapBuffers();
 }
 
 void GEngine::EngineWindow::InitBuffers()
@@ -205,16 +206,14 @@ void GEngine::EngineWindow::SwapBuffers()
 	if(_isDefaultBufferActive)
 	{
 		_frameBuffer02 = _frameBuffer01;
-		_frameBuffer01 = {};
-//		AllocateBuffer(_frameBuffer01);
+		_frameBuffer01 = nullptr;
 		SetActiveBuffer(_frameBuffer02);
 		_isDefaultBufferActive = false;
 	}
 	else
 	{
 		_frameBuffer01 = _frameBuffer02;
-		_frameBuffer02 = {};
-//		AllocateBuffer(_frameBuffer02);
+		_frameBuffer02 = nullptr;
 		SetActiveBuffer(_frameBuffer01);
 		_isDefaultBufferActive = true;
 	}
@@ -251,8 +250,12 @@ void GEngine::EngineWindow::ClearBg(GGraphics::Color bkColor)
 
 GEngine::EngineWindow::~EngineWindow()
 {
-	DeallocateBuffer(_frameBuffer01);
-	DeallocateBuffer(_frameBuffer02);
+	if (_frameBuffer01 != nullptr)
+		DeallocateBuffer(_frameBuffer01);
+
+	if (_frameBuffer02 != nullptr)
+		DeallocateBuffer(_frameBuffer02);
+
 	ReleaseDC(Window(), _hdc);
 }
 
@@ -268,8 +271,11 @@ int GEngine::EngineWindow::GetHeight()
 
 void GEngine::EngineWindow::HandleWindowResize(int newWidth, int newHeight)
 {
-	DeallocateBuffer(_frameBuffer01);
-	DeallocateBuffer(_frameBuffer02);
+	if (_frameBuffer01 != nullptr)
+		DeallocateBuffer(_frameBuffer01);
+
+	if (_frameBuffer02 != nullptr)
+		DeallocateBuffer(_frameBuffer02);
 
 	_windowWidth = newWidth;
 	_windowHeight = newHeight;

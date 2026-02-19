@@ -188,7 +188,8 @@ namespace ECS
 		   template <typename T>
 		   void AssignComponentAndSetDefaultValues(EntityID id)
 		   {
-			   std::cout << "Setting and assigning component values to ID :: " << id.entId << " Name :: " << entityManager->GetEntityName(id) << '\n';
+			   std::cout << "Want to attach component type :: " << typeid(T).name() << " to entity(" << id.entId << "):: " << entityManager->GetEntityName(id) << '\n';
+			   std::cout << "Assigning default component values..." << '\n';
 
 			   entityManager->template AssignComponent<T>(id, *componentManager);
 			   entityManager->template SetComponentValue<T>({}, id, *componentManager);

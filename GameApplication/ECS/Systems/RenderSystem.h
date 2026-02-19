@@ -97,7 +97,7 @@ public:
 			}
 
 			world->GetEcsManager()
-				 ->SetComponentValue<Transform>({transform->position, transform->rotation /*rotVec*/,
+				 ->SetComponentValue<Transform>({transform->position, /*transform->rotation*/ rotVec,
 												 transform->scale}, entId);
 
 			std::unique_ptr<GGraphics::Mesh> meshCopy = std::make_unique<GGraphics::Mesh>(meshComp->mesh);
