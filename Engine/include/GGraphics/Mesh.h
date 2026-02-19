@@ -239,7 +239,7 @@ namespace GGraphics
 				   if(i%3 == 2)
 				   {
 					   _tris.push_back(tri);
-					   _triIndicesMap.insert(std::pair<int, std::vector<int>>(_tris.size() - 1, indicesForTheTriangle));
+					   _triIndicesMap.insert(std::pair<int, std::vector<int>>(static_cast<int>(_tris.size() - 1), indicesForTheTriangle));
 					   indicesForTheTriangle = {};
 					   tri = {};
 				   }
