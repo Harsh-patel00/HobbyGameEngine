@@ -61,17 +61,17 @@ namespace ECS
 
 		   bool operator==(const Iterator& other) const
 		   {
-			   // Compare two iterators
-			   return index == other.index || index == pScene->entities.size();
+			   // Compare two iterators - both must be at same position
+			   return index == other.index;
 		   }
 
 		   bool operator!=(const Iterator& other) const
 		   {
-			   // Similar to above
-			   return index != other.index && index != pScene->entities.size();
+			   // Must be the logical opposite of operator==
+			   return !(*this == other);
 		   }
 
-		   bool ValidIndex()
+		   bool ValidIndex() const
 		   {
 			   return
 				   // It's a valid entity ID
@@ -170,9 +170,9 @@ namespace ECS
 			   return entityManager->template GetComponent<T>(id, *componentManager);
 		   }
 
-		   // Set the component value, 1 at a time
+		   // Set the component value, 1 at a time - uses const reference to avoid copies
 		   template<typename T>
-		   void SetComponentValue(T value, EntityID id)
+		   void SetComponentValue(const T& value, EntityID id)
 		   {
 			   entityManager->template SetComponentValue<T>(value, id, *componentManager);
 		   }

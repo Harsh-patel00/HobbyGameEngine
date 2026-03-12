@@ -88,4 +88,5 @@ CTestTestfile.cmake
 _deps
 
 cmake-build*
+build*
 /.vs

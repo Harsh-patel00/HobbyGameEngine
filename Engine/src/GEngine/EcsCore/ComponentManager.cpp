@@ -5,7 +5,7 @@
 #include <iostream>
 #include "GEngine/EcsCore/ComponentManager.h"
 
-int ECS::s_componentCounter = 0;
+std::atomic<int> ECS::s_componentCounter = 0;
 
 void ECS::ComponentManager::Init()
 {

@@ -3,17 +3,19 @@
 // This file includes all the typedefs related to ECS and some structs and functions
 //
 
-#include <iostream>
-#include <bitset>
-
-namespace ECS
-{
 #ifndef GAMEENGINE_PREREQUISITE_H
 #define GAMEENGINE_PREREQUISITE_H
 
+#include <iostream>
+#include <bitset>
+#include <atomic>
+#include <string>
+
+namespace ECS
+{
 #pragma region Functions
 
-   extern int s_componentCounter;
+   extern std::atomic<int> s_componentCounter;
 
    template<class T>
    int GetComponentId()
@@ -77,5 +79,6 @@ namespace ECS
 
 #pragma endregion
 
+} // namespace ECS
+
 #endif //GAMEENGINE_PREREQUISITE_H
-}

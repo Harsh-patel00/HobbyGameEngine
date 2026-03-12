@@ -9,6 +9,9 @@ namespace ECS
 #ifndef GAMEENGINE_ENTITYMANAGER_H
 #define GAMEENGINE_ENTITYMANAGER_H
 
+#include <vector>
+#include <string>
+
    class EntityManager
    {
 	   public:
@@ -19,7 +22,7 @@ namespace ECS
 		   // Count of entities that not deleted
 		   uint AliveEntityCount{};
 
-		   EntityIndex GetEntityIndex(EntityID);
+		   EntityIndex GetEntityIndex(EntityID) const;
 
 	   public:
 		   EntityManager();
@@ -35,7 +38,7 @@ namespace ECS
 
 		   // Checks if the component is present/assigned to the entity or not
 		   template<typename T>
-		   bool IsComponentPresent(EntityID entityId)
+		   bool IsComponentPresent(EntityID entityId) const
 		   {
 			   return entities[GetEntityIndex(entityId)].mask.test(GetComponentId<T>());
 		   }
@@ -48,7 +51,7 @@ namespace ECS
 		   // Set the entity name (Easy to debug)
 		   void SetEntityName(EntityID id, const std::string &name);
 		   // Get the entity name (Easy to debug)
-		   std::string GetEntityName(EntityID id);
+		   std::string GetEntityName(EntityID id) const;
 		   // To see if the entity is not deleted
 		   bool IsEntityValid(EntityID entityId);
 
@@ -70,11 +73,11 @@ namespace ECS
 
 			   cm.AssignComponent<T>(entities[GetEntityIndex(id)]);
 
-			   std::cout << "Component assigned to : " << GetEntityName(id) <<
-			   "\nMask : " << entities[GetEntityIndex(id)].mask << "\n";
-		   }
+				   std::cout << "Component assigned to : " << GetEntityName(id) <<
+				   "\nMask : " << entities[GetEntityIndex(id)].mask << "\n";
+			   }
 
-		   // Remove assigned component from the entity
+			   // Remove assigned component from the entity
 		   template<typename T>
 		   void RemoveComponent(EntityID id)
 		   {
@@ -135,9 +138,12 @@ namespace ECS
 			   return cm.GetComponentFromList<T>(GetEntityIndex(id));
 		   }
 
-		   // Set the component value
+		   // Reinitialize entity slot when it's reused (destructs and reconstructs components)
+		   void ReinitializeEntitySlot(EntityIndex entityIndex);
+
+		   // Set the component value - uses const reference to avoid unnecessary copies
 		   template<typename T>
-		   void SetComponentValue(T value, EntityID id, ComponentManager &cm)
+		   void SetComponentValue(const T& value, EntityID id, ComponentManager &cm)
 		   {
 			   if(!IsEntityValid(id))
 			   {
