@@ -99,14 +99,13 @@ namespace GGraphics
 				   void plot(int x, int y, float c)
 				   {
 					   // Set brightness of the color
+					   GGraphics::Color plotColor(ColorEnum::RED);
 
-					   color = GGraphics::Color(ColorEnum::RED);
+					   plotColor.r = static_cast<uint8_t>(plotColor.r * c);
+					   plotColor.g = static_cast<uint8_t>(plotColor.g * c);
+					   plotColor.b = static_cast<uint8_t>(plotColor.b * c);
 
-					   color.r *= c;
-					   color.g *= c;
-					   color.b *= c;
-
-					   pDrawWindow->DrawPixel(x, y, color);
+					   pDrawWindow->DrawPixel(x, y, plotColor);
 				   }
 
 				   // integer part of x
@@ -243,7 +242,6 @@ namespace GGraphics
 
 			   void Draw(GEngine::EngineWindow *window, Color lineColor, bool debug = false)
 			   {
-				   RecalculateNormal();
 				   if(debug)
 				   {
 					   Line{points[0], points[1], window, GGraphics::Color(GGraphics::ColorEnum::RED)}.Draw();
@@ -294,23 +292,14 @@ namespace GGraphics
 			   }
 
 		   private:
-			   // Calculate the face normal internally when the triangle is created
+			   // Calculate the face normal from triangle edges
 			   void CalculateFaceNormals()
 			   {
-				   Line line1(points[0], points[1]);
-				   Line line2(points[2], points[0]);
+				   GMath::Vec3f edge1(points[1] - points[0]);
+				   GMath::Vec3f edge2(points[2] - points[0]);
 
-				   GMath::Vec3f vec1(line1.end - line1.start);
-				   GMath::Vec3f vec2(line2.start - line2.end);
-
-				   faceNormal = vec1.Cross(vec2);
-
-				   //std::cout << "Face Normal Raw :: " << faceNormal << '\n';
-
+				   faceNormal = edge1.Cross(edge2);
 				   faceNormal.Normalize();
-
-				   //std::cout << "Face Normal Normalized :: " << faceNormal << '\n';
-
 			   }
 
 		   private:

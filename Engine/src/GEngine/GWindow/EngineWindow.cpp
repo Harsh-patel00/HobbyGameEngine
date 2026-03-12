@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <string>
+#include <algorithm>
 #include "GEngine/GWindow/EngineWindow.h"
 
 Action<void*> Events::EngineEventManager::WindowCreate{};
@@ -28,7 +29,14 @@ GEngine::LRESULT GEngine::EngineWindow::HandleMessage(UINT uMsg, WPARAM wParam, 
 			return 0;
 
 		case WM_PAINT:
+		{
+			// Must call BeginPaint/EndPaint to validate the update region,
+			// otherwise WM_PAINT is continuously re-posted and PeekMessage never yields
+			PAINTSTRUCT ps;
+			BeginPaint(m_hwnd, &ps);
+			EndPaint(m_hwnd, &ps);
 			return 0;
+		}
 
 		case WM_SIZE:
 		{
@@ -107,17 +115,24 @@ void GEngine::EngineWindow::Show()
 void GEngine::EngineWindow::StartMessageLoop()
 {
 	std::cout << "Listening for window messages...\n\n";
-	// Run the message loop.
+	// Non-blocking message loop — never stalls the render loop
 	MSG msg = { };
 	while(!_isWindowClosed)
 	{
-		if(GetMessage(&msg, nullptr, 0, 0))
+		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
+			if(msg.message == WM_QUIT)
+			{
+				_isWindowClosed = true;
+				break;
+			}
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
 
-		OnUpdate(); // This loop will determine our FPS
+		if(_isWindowClosed) break;
+
+		OnUpdate();
 
 		std::string finalWindowTitle = _windowTitle + " :: FPS :: " + std::to_string(1/_elapsedTime.count());
 		std::wstring finalWindowTitleW = std::wstring(finalWindowTitle.begin(), finalWindowTitle.end());
@@ -141,11 +156,11 @@ void GEngine::EngineWindow::OnUpdate()
 
 void GEngine::EngineWindow::InitBuffers()
 {
-	// Assign memory to both buffers
+	// Allocate both buffers for true double buffering
 	AllocateBuffer(_frameBuffer01);
-	_frameBuffer02 = nullptr;
+	AllocateBuffer(_frameBuffer02);
 
-	// This will be the default buffer, so use this buffer by default
+	// Buffer01 is the initial back buffer (draw target)
 	_isDefaultBufferActive = true;
 }
 
@@ -203,20 +218,11 @@ void *GEngine::EngineWindow::GetActiveBuffer() const
 
 void GEngine::EngineWindow::SwapBuffers()
 {
-	if(_isDefaultBufferActive)
-	{
-		_frameBuffer02 = _frameBuffer01;
-		_frameBuffer01 = nullptr;
-		SetActiveBuffer(_frameBuffer02);
-		_isDefaultBufferActive = false;
-	}
-	else
-	{
-		_frameBuffer01 = _frameBuffer02;
-		_frameBuffer02 = nullptr;
-		SetActiveBuffer(_frameBuffer01);
-		_isDefaultBufferActive = true;
-	}
+	// Present the back buffer (the one we just drew into) to the screen
+	SetActiveBuffer(GetActiveBuffer());
+
+	// Swap front and back buffer pointers — both buffers stay allocated
+	_isDefaultBufferActive = !_isDefaultBufferActive;
 }
 
 void GEngine::EngineWindow::DrawPixel(int x, int y, GGraphics::Color newColor)
@@ -228,8 +234,10 @@ void GEngine::EngineWindow::ColorPixel(int x, int y, GGraphics::Color newColor)
 {
 	auto *pixel = (uint32_t *)GetActiveBuffer();
 
-	// Convert 3 decimals to hex
-	uint32_t color = (newColor.r << 16) ^ (newColor.g << 8) ^ newColor.b;
+	// Pack RGB channels into a single 32-bit value (0x00RRGGBB)
+	uint32_t color = (static_cast<uint32_t>(newColor.r) << 16)
+	               | (static_cast<uint32_t>(newColor.g) << 8)
+	               | static_cast<uint32_t>(newColor.b);
 
 	pixel += y * _windowWidth + x; // Travel up by y, window width times + move forward by x
 
@@ -240,12 +248,11 @@ void GEngine::EngineWindow::ClearBg(GGraphics::Color bkColor)
 {
 	auto *pixel = (uint32_t *)GetActiveBuffer();
 
-	uint32_t color = (bkColor.r << 16) ^ (bkColor.g << 8) ^ bkColor.b;
+	uint32_t color = (static_cast<uint32_t>(bkColor.r) << 16)
+	               | (static_cast<uint32_t>(bkColor.g) << 8)
+	               | static_cast<uint32_t>(bkColor.b);
 
-	for (int i = 0; i < _windowWidth * _windowHeight; ++i)
-	{
-		*pixel++ = color;
-	}
+	std::fill_n(pixel, _windowWidth * _windowHeight, color);
 }
 
 GEngine::EngineWindow::~EngineWindow()

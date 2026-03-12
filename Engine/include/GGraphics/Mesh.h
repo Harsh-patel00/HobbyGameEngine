@@ -133,10 +133,11 @@ namespace GGraphics
 				return _indices;
 		   }
 
+		   // Use when only vertex positions change (transforms) — indices and topology unchanged
 		   void SetVertices(const std::vector<Point3f> &verts)
 		   {
 			   _vertices = verts;
-			   GenerateTris(); // Update the _tris vector with latest vertices
+			   UpdateTriVertices();
 		   }
 
 		   [[nodiscard]] std::vector<Point3f> GetVertices() const
@@ -172,23 +173,17 @@ namespace GGraphics
 				}
 				else if(_drawMode == MeshDrawMode::Quad)
 				{
-					std::vector<int> quadSubIndices;
-
-					for (int i = 0; i < _indices.size(); i+=2)
+					// Each quad (4 indices) is split into 2 triangles: (0,1,2) and (0,2,3)
+					for (size_t i = 0; i + 3 < _indices.size(); i += 4)
 					{
-						for (int j = 0; j < 3; ++j)
-						{
-							int ind = i + j;
+						auto &v0 = _vertices[_indices[i]];
+						auto &v1 = _vertices[_indices[i + 1]];
+						auto &v2 = _vertices[_indices[i + 2]];
+						auto &v3 = _vertices[_indices[i + 3]];
 
-							if( (i != 0 && j != 0) && ind % 4 == 0 )
-							{
-								ind  = ind - 4;
-							}
-							quadSubIndices.push_back(_indices[ind]);
-						}
+						Primitives2d::Triangle{v0, v1, v2}.Draw(window, color, false);
+						Primitives2d::Triangle{v0, v2, v3}.Draw(window, color, false);
 					}
-
-					DrawTriangle(quadSubIndices, window, color);
 				}
 				else if(_drawMode == MeshDrawMode::Lines)
 				{
@@ -222,50 +217,49 @@ namespace GGraphics
 
 
 	   private:
+		   // Full rebuild — call only when indices/topology change
 		   void GenerateTris()
 		   {
 			   _tris.clear();
 			   _triIndicesMap.clear();
 
+			   if (_drawMode != MeshDrawMode::Triangle) return;
+
 			   GGraphics::Primitives2d::Triangle tri{};
 			   std::vector<int> indicesForTheTriangle{};
 
-			   // for each index in indices
-			   for(int i = 0; i < _indices.size(); i++)
+			   for(size_t i = 0; i < _indices.size(); i++)
 			   {
 				   tri.points[i % 3] = _vertices[_indices[i]];
 				   indicesForTheTriangle.push_back(_indices[i]);
 
-				   if(i%3 == 2)
+				   if(i % 3 == 2)
 				   {
 					   _tris.push_back(tri);
-					   _triIndicesMap.insert(std::pair<int, std::vector<int>>(static_cast<int>(_tris.size() - 1), indicesForTheTriangle));
-					   indicesForTheTriangle = {};
+					   _triIndicesMap.insert({static_cast<int>(_tris.size() - 1), indicesForTheTriangle});
+					   indicesForTheTriangle.clear();
 					   tri = {};
 				   }
 			   }
-
-			   //std::cout << "Mesh :: GenerateTris :: Total tris after generation :: " << _tris.size() << '\n';
 		   }
-		   void DrawTriangle(const std::vector<int>& indexList, GEngine::EngineWindow *window, Color &lineColor)
+
+		   // Fast path — only repositions existing triangle vertices without rebuilding topology
+		   void UpdateTriVertices()
 		   {
-			   //if(indexList.size() % 3 != 0) throw std::length_error("Indices for triangle must be multiples of 3.");
-			   //
-			   //// for each index in indices
-			   //for(int i = 0; i < indexList.size() - 2; i+=3)
-			   //{
-				//   auto tri = Primitives2d::Triangle
-				//		   {
-				//				   _vertices[indexList[i]],
-				//				   _vertices[indexList[i + 1]],
-				//				   _vertices[indexList[i + 2]]
-				//		   };
-			   //
-				//   tri.Draw(window, lineColor);
-			   //
-				//   	std::cout << "Tri :: \n";
-				//   	tri.Print();
-			   //}
+			   if (_drawMode != MeshDrawMode::Triangle) return;
+
+			   // If triangle count doesn't match (first call or topology changed), do a full rebuild
+			   if (_tris.size() != _indices.size() / 3)
+			   {
+				   GenerateTris();
+				   return;
+			   }
+
+			   // Just update vertex positions in existing triangles
+			   for (size_t i = 0; i < _indices.size(); i++)
+			   {
+				   _tris[i / 3].points[i % 3] = _vertices[_indices[i]];
+			   }
 		   }
    };
 }

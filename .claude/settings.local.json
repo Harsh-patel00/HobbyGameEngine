@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(where ffmpeg)",
+      "Bash(where ffprobe)",
+      "Bash(where magick)",
+      "Bash(where python)",
+      "Bash(where py)",
+      "Bash(py --version)",
+      "Bash(where pip)",
+      "Bash(where conda)",
+      "Bash(where choco)",
+      "Bash(where winget)",
+      "Bash(where scoop)",
+      "Bash(winget list --name ffmpeg)",
+      "Bash(dir \"C:\\\\Program Files\\\\ffmpeg\")",
+      "Bash(dir \"C:\\\\ffmpeg\")",
+      "Bash(cmake -B build -DCMAKE_CXX_STANDARD=23)",
+      "Bash(where cmake)",
+      "Bash(powershell -Command \"Get-Command cmake -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source\")",
+      "Read(//c/Program Files/CMake/bin/**)",
+      "Read(//c/Program Files \\(x86\\)/Microsoft Visual Studio/**)",
+      "Bash(powershell -Command \"Get-ChildItem -Path ''C:\\\\Program Files'',''C:\\\\Program Files \\(x86\\)'' -Recurse -Filter ''cmake.exe'' -ErrorAction SilentlyContinue | Select-Object -First 3 -ExpandProperty FullName\")",
+      "Bash(CMAKE=\"/c/Program Files/Microsoft Visual Studio/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe\")",
+      "Bash(\"$CMAKE\" -B build -DCMAKE_CXX_STANDARD=23)",
+      "Bash(\"$CMAKE\" --build build)",
+      "Bash(powershell -Command \"Start-Process -FilePath ''build\\\\Debug\\\\GameEngine.exe''\")",
+      "Bash(powershell -Command \"Start-Sleep -Seconds 3; Get-Process -Name GameEngine -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, CPU, WorkingSet64\")",
+      "Bash(powershell -Command \"Get-Process -Name GameEngine -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, CPU\")",
+      "Bash(powershell -Command \"Stop-Process -Name GameEngine -Force -ErrorAction SilentlyContinue\")"
+    ]
+  }
+}

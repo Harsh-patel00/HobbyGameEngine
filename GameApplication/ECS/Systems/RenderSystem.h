@@ -100,27 +100,9 @@ public:
 				 ->SetComponentValue<Transform>({transform->position, /*transform->rotation*/ rotVec,
 												 transform->scale}, entId);
 
-			std::unique_ptr<GGraphics::Mesh> meshCopy = std::make_unique<GGraphics::Mesh>(meshComp->mesh);
-
-			/*{
-				std::cout << "Original Mesh :: \n";
-
-				for (auto tri: meshComp->mesh.GetTriangles())
-				{
-					tri.Print();
-				}
-			}*/
-
-			ProcessMesh(*meshCopy, *transform);
-
-			/*{
-				std::cout << "Transformed Mesh :: \n";
-
-				for (auto tri: meshCopy->GetTriangles())
-				{
-					tri.Print();
-				}
-			}*/
+			// Stack-local copy — avoids heap allocation; only vertices are transformed
+			GGraphics::Mesh meshCopy(meshComp->mesh);
+			ProcessMesh(meshCopy, *transform);
 
 			entCount++;
 		}
@@ -145,99 +127,39 @@ public:
 
 	void ProcessMesh( GGraphics::Mesh &mesh, const Transform &transform )
 	{
-		// Convert from Local to World Position
-		// Convert from World to View
-		// Convert from View to Projection (Camera Frustum is CVV here)
-		// Convert from Projection to Window (CVV is a rectangle which maps to screen) ([-1, 1] -> [screen size])
-
-		// Part of Vertex Shader
-		ConvertLocalToWorld(mesh, transform);
-		ConvertWorldToView(mesh);
-
-		// Part of Geometry Shader
-		// TODO: Perform cullling operations before projection
-		//CullBackfaces(mesh);
-		ConvertViewToProjection(mesh);
-		// TODO: Perform clipping operations after projection
-
-		// Viewport is also called CVV
-		// Rasterize
-
-		ConvertProjectionToViewport(mesh);
-
-		// Part of Fragment Shader
-		mesh.Draw(pWindow, GGraphics::Color(GGraphics::ColorEnum::GREEN));
-	}
-
-	void ConvertLocalToWorld( GGraphics::Mesh &mesh, const Transform &transform )
-	{
+		// Build composite matrix: Local → World → View → Projection
+		// This is a single matrix that transforms vertices from local space to clip space
 		Mat4f T = GGraphics::Transformation::GetTranslationMatrix(transform.position);
 		Mat4f R = GGraphics::Transformation::GetRotationMatrix(transform.rotation);
 		Mat4f S = GGraphics::Transformation::GetScaleMatrix(transform.scale);
+		Mat4f modelMatrix = T * R * S;
 
-		// Multiplication in order
-		// 1. Scale (S)
-		// 2. Rotate (R)
-		// 3. Translate (T)
-		Mat4f matL2W = T * R * S;
+		Mat4f viewMatrix = GGraphics::Transformation::GetWorldToViewMatrix(
+			_sceneCamera.origin, _sceneCamera.lookAt, _sceneCamera.upDirection);
 
-		//			std::cout << "matL2W Mat :: " << matL2W << "\n";
+		Mat4f projMatrix = GGraphics::Transformation::GetProjectionMatrix(_sceneCamera);
 
-		auto modifiedVerts = mesh.GetVertices();
-		// For each point in mesh
-		for ( Point3f &point : modifiedVerts )
-		{
-			// Apply Transformations
-			point = matL2W * point;
-		}
-		mesh.SetVertices(modifiedVerts);
-	}
+		// TODO: Perform backface culling in view space (before projection)
+		// TODO: Perform clipping in clip space (after projection, before viewport)
 
-	void ConvertWorldToView( GGraphics::Mesh &mesh )
-	{
-		Mat4f w2v = GGraphics::Transformation::GetWorldToViewMatrix(_sceneCamera.origin, _sceneCamera.lookAt, _sceneCamera.upDirection);
-
-		//			std::cout << "w2v Mat :: " << w2v << "\n";
-
-		auto modifiedVerts = mesh.GetVertices();
-
-		for ( Point3f &point : modifiedVerts )
-		{
-			point = w2v * point;
-		}
-
-		mesh.SetVertices(modifiedVerts);
-	}
-
-	void ConvertViewToProjection( GGraphics::Mesh &mesh )
-	{
-		//			std::cout << "View >> Proj\n";
-
-		Mat4f projectionMatrix = GGraphics::Transformation::GetProjectionMatrix(_sceneCamera);
-
-		//			std::cout << "v2P Mat :: " << projectionMatrix << "\n";
-		auto          modifiedVerts = mesh.GetVertices();
-		for ( Point3f &point : modifiedVerts )
-		{
-			point = projectionMatrix * point;
-			//std::cout << "Projected Point :: " << point << '\n';
-		}
-
-		mesh.SetVertices(modifiedVerts);
-	}
-
-	void ConvertProjectionToViewport( GGraphics::Mesh &mesh )
-	{
-		//			std::cout << "Proj >> Viewport \n";
-
+		// Single-pass vertex transform: local → world → view → projection → screen
+		// Only one call to SetVertices — only one UpdateTriVertices
 		auto verts = mesh.GetVertices();
-
 		for ( Point3f &point : verts )
 		{
+			// Model → View (affine, w stays 1 — no w-divide in Mat4f*Point3f)
+			point = viewMatrix * (modelMatrix * point);
+
+			// View → Clip → NDC (perspective divide happens inside Mat4f*Point3f when w != 1)
+			point = projMatrix * point;
+
+			// NDC → Screen
 			ConvertPointToScreenSpace(point);
 		}
-
 		mesh.SetVertices(verts);
+
+		// Rasterize
+		mesh.Draw(pWindow, GGraphics::Color(GGraphics::ColorEnum::GREEN));
 	}
 
 	void SetupSceneCamera( Camera &camera )
